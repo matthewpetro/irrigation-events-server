@@ -1,7 +1,7 @@
+.devcontainer
 .github
-.husky
-.next
 .vscode
-node_modules
+node_modules/
+dist/
 
 .env*

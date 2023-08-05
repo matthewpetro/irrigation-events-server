@@ -1,7 +1,8 @@
 {
+  "name": "irrigation-events-server",
   "scripts": {
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\"",
-    "build": "npx tsc",
+    "build": "tsc",
     "start": "node dist/index.js"
   },
   "dependencies": {
