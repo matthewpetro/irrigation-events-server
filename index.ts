@@ -1,4 +1,4 @@
-import express, { Express, Request, Response} from 'express'
+import express, { Express, Request, Response } from 'express'
 // import dotenv from 'dotenv'
 
 // dotenv.config({ path: '.env.local'})
@@ -21,10 +21,11 @@ type MakerApiEvent = {
 
 const DeviceState = {
   ON: 'on',
-  OFF: 'off'
+  OFF: 'off',
 } as const
 
-type DeviceState = typeof DeviceState[keyof typeof DeviceState]
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+type DeviceState = (typeof DeviceState)[keyof typeof DeviceState]
 
 type IrrigationEvent = {
   deviceName: string
@@ -44,7 +45,7 @@ const makerEventToIrrigationEvent = (event: MakerApiEvent): IrrigationEvent => {
     deviceId: parseInt(deviceId, 10),
     state,
     timestamp,
-    isoTimestamp
+    isoTimestamp,
   }
 }
 
