@@ -32,20 +32,15 @@ type IrrigationEvent = {
   deviceId: number
   state: DeviceState
   timestamp: number
-  isoTimestamp: string
 }
 
 const makerEventToIrrigationEvent = (event: MakerApiEvent): IrrigationEvent => {
-  const { name, value, deviceId } = event.content
-  const state = value === 'on' ? DeviceState.ON : DeviceState.OFF
-  const timestamp = Date.now()
-  const isoTimestamp = new Date(timestamp).toISOString()
+  const { displayName, value, deviceId } = event.content
   return {
-    deviceName: name,
+    deviceName: displayName,
     deviceId: parseInt(deviceId, 10),
-    state,
-    timestamp,
-    isoTimestamp,
+    state: value === 'on' ? DeviceState.ON : DeviceState.OFF,
+    timestamp: Date.now()
   }
 }
 
