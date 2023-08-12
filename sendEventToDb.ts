@@ -49,10 +49,10 @@ export default async function sendEventToDb(req: Request, res: Response, next: N
   console.log(req.body)
   const irrigationEvent = makerEventToIrrigationEvent(event)
   console.log(irrigationEvent)
-  // try {
-  //   await db.insert(irrigationEvent)
-  // } catch (error) {
-  //   console.error(error)
-  // }
+  try {
+    await db.insert(irrigationEvent)
+  } catch (error) {
+    console.error(error)
+  }
   next()
 }

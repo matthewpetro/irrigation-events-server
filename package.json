@@ -1,9 +1,10 @@
 {
   "name": "irrigation-events-server",
   "scripts": {
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\"",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon\"",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node --require dotenv/config dist/index.js dotenv_config_path=.env.local",
+    "start:prod": "node dist/index.js",
     "checkFormat": "prettier --check \"**/*.ts\"",
     "lint": "eslint . --ext .js,.ts"
   },

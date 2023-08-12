@@ -1,8 +1,5 @@
 import express, { Express, Request, Response } from 'express'
-import dotenv from 'dotenv'
 import sendEventToDb from './sendEventToDb'
-
-dotenv.config({ path: '.env.local'})
 
 const PORT = 3000
 
