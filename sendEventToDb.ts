@@ -43,19 +43,19 @@ const DeviceState = {
 type DeviceState = (typeof DeviceState)[keyof typeof DeviceState]
 
 interface IrrigationEvent extends Nano.MaybeDocument {
+  _id: string
   deviceName: string
   deviceId: number
   state: DeviceState
-  timestamp: number
 }
 
 const makerEventToIrrigationEvent = (event: MakerApiEvent): IrrigationEvent => {
   const { displayName, value, deviceId } = event.content
   return {
+    _id: new Date().toISOString(),
     deviceName: displayName,
     deviceId: parseInt(deviceId, 10),
     state: value === 'on' ? DeviceState.ON : DeviceState.OFF,
-    timestamp: Date.now(),
   }
 }
 
