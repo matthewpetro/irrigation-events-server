@@ -8,8 +8,16 @@ const nano = Nano({
   },
 })
 const db = nano.db.use(process.env.DB_NAME as string)
+
 // Use CouchDB's cookie authentication
-await nano.auth(process.env.DB_USERNAME as string, process.env.DB_PASSWORD as string)
+const nanoAuth = async () =>
+  nano.auth(process.env.DB_USERNAME as string, process.env.DB_PASSWORD as string)
+await nanoAuth()
+
+const authRefreshMinutes = process.env.DB_AUTH_REFRESH_MINUTES
+  ? parseInt(process.env.DB_AUTH_REFRESH_MINUTES, 10)
+  : 9
+setInterval(nanoAuth, authRefreshMinutes * 60 * 1000)
 
 type MakerApiEventContent = {
   name: string
