@@ -3,13 +3,13 @@ Content-Type: application/json
 
 {
   "content": {
-    "name": "",
+    "name": "switch",
     "value": "on",
     "displayName": "Virtual Device",
     "deviceId": "42",
-    "descriptionText": "",
-    "unit": "",
-    "type": "",
-    "data": ""
+    "descriptionText": "Virtual Device: switch is on",
+    "unit": null,
+    "type": "digital",
+    "data": null
   }
 }
