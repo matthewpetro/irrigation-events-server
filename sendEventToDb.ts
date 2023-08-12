@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import Nano from 'nano'
 
 const nano = Nano({
-  url: process.env.DB_URL as string,
+  url: process.env.COUCHDB_URL as string,
   requestDefaults: {
     jar: true,
   },
