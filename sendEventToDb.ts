@@ -1,7 +1,15 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import Nano from 'nano'
 
-const db = Nano(process.env.COUCHDB_URL as string).use(process.env.DB_NAME as string)
+const nano = Nano({
+  url: process.env.DB_URL as string,
+  requestDefaults: {
+    jar: true,
+  },
+})
+const db = nano.db.use(process.env.DB_NAME as string)
+// Use CouchDB's cookie authentication
+await nano.auth(process.env.DB_USERNAME as string, process.env.DB_PASSWORD as string)
 
 type MakerApiEventContent = {
   name: string
@@ -43,9 +51,8 @@ const makerEventToIrrigationEvent = (event: MakerApiEvent): IrrigationEvent => {
   }
 }
 
-export default async function sendEventToDb(req: Request, res: Response, next: NextFunction) {
+export default async function sendEventToDb(req: Request, res: Response) {
   const event: MakerApiEvent = req.body
-  res.status(200).end()
   console.log(req.body)
   const irrigationEvent = makerEventToIrrigationEvent(event)
   console.log(irrigationEvent)
@@ -54,5 +61,5 @@ export default async function sendEventToDb(req: Request, res: Response, next: N
   } catch (error) {
     console.error(error)
   }
-  next()
+  res.status(200).end()
 }
