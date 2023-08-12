@@ -1,5 +1,6 @@
 {
   "name": "irrigation-events-server",
+  "type":"module",
   "scripts": {
     "dev": "concurrently \"npx tsc --watch\" \"nodemon\"",
     "build": "tsc",

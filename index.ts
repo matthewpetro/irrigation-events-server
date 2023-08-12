@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from 'express'
-import sendEventToDb from './sendEventToDb'
+import sendEventToDb from './sendEventToDb.js'
 
 const PORT = 3000
 
