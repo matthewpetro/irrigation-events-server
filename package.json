@@ -1,6 +1,6 @@
 {
   "name": "irrigation-events-server",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "dev": "concurrently \"npx tsc --watch\" \"nodemon\"",
     "build": "tsc",
@@ -10,6 +10,8 @@
     "lint": "eslint . --ext .js,.ts"
   },
   "dependencies": {
+    "date-fns": "^2.30.0",
+    "date-fns-tz": "^2.0.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.1",
     "nano": "^10.1.2"
