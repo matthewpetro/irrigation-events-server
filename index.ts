@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express'
-import sendEventToDb from './sendEventToDb.js'
+import sendEventToDb from './middleware/sendEventToDb.js'
+import getIrrigationEvents from './middleware/getIrrigationEvents.js'
 
 const PORT = 3000
 
@@ -11,6 +12,8 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 app.post('/irrigationEvent', sendEventToDb)
+
+app.get('/irrigationEvents', getIrrigationEvents)
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`)
