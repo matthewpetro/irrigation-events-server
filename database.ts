@@ -16,7 +16,7 @@ await nanoAuth()
 
 const authRefreshMinutes = process.env.DB_AUTH_REFRESH_MINUTES
   ? parseInt(process.env.DB_AUTH_REFRESH_MINUTES, 10)
-  : 9
+  : 5
 setInterval(nanoAuth, authRefreshMinutes * 60 * 1000)
 
 export default db
