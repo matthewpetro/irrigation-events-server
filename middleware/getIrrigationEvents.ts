@@ -58,6 +58,8 @@ export default async function getIrrigationEvents(req: Request, res: Response) {
         },
       ],
     },
+    sort: [{_id: "asc"}],
+    limit: 10000,
   }
   try {
     const dbResponse = await db.find(query)
