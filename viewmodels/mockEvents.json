@@ -1,0 +1,206 @@
+[
+  {
+      "timestamp": "2023-08-30T12:32:01.473Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T12:32:01.481Z",
+      "deviceName": "Front trees",
+      "deviceId": 675,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T12:44:01.602Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-30T12:44:08.075Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T12:52:01.232Z",
+      "deviceName": "Front plants",
+      "deviceId": 676,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T12:56:06.799Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-30T13:02:00.818Z",
+      "deviceName": "Back trees",
+      "deviceId": 677,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T13:37:01.502Z",
+      "deviceName": "Front plants",
+      "deviceId": 676,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-30T13:37:06.432Z",
+      "deviceName": "Back plants",
+      "deviceId": 769,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T14:00:04.548Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T14:00:04.558Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T14:00:30.843Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-30T14:00:30.882Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-30T14:22:06.969Z",
+      "deviceName": "Back plants",
+      "deviceId": 769,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-30T15:02:01.355Z",
+      "deviceName": "Front trees",
+      "deviceId": 675,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-30T16:00:04.206Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T16:00:04.223Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-30T16:00:30.916Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-30T16:00:30.945Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-31T07:02:00.793Z",
+      "deviceName": "Back trees",
+      "deviceId": 677,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-31T12:33:00.636Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-31T12:33:00.682Z",
+      "deviceName": "Front trees",
+      "deviceId": 675,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-31T12:45:00.719Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-31T12:45:05.771Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-31T12:53:00.043Z",
+      "deviceName": "Front plants",
+      "deviceId": 676,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-31T12:57:05.908Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-31T13:38:00.348Z",
+      "deviceName": "Front plants",
+      "deviceId": 676,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-31T13:38:05.306Z",
+      "deviceName": "Back plants",
+      "deviceId": 769,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-08-31T14:23:05.815Z",
+      "deviceName": "Back plants",
+      "deviceId": 769,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-08-31T15:03:00.463Z",
+      "deviceName": "Front trees",
+      "deviceId": 675,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-09-01T00:49:14.288Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-09-01T01:01:14.624Z",
+      "deviceName": "North lawn",
+      "deviceId": 768,
+      "state": "off"
+  },
+  {
+      "timestamp": "2023-09-01T01:01:19.525Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "on"
+  },
+  {
+      "timestamp": "2023-09-01T01:13:19.874Z",
+      "deviceName": "South lawn",
+      "deviceId": 767,
+      "state": "off"
+  }
+]

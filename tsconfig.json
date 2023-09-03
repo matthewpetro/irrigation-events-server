@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "module": "es2022",
+    "resolveJsonModule": true,
   },
   "exclude": [
     "node_modules"
