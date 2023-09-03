@@ -15,4 +15,11 @@ interface IrrigationEventDocument extends MaybeDocument {
   state: DeviceState
 }
 
-export { DeviceState, IrrigationEventDocument }
+type IrrigationEvent = {
+  timestamp: string
+  deviceName: string
+  deviceId: number
+  state: DeviceState
+}
+
+export { DeviceState, IrrigationEventDocument, IrrigationEvent }

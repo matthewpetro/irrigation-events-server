@@ -2,15 +2,9 @@ import { Request, Response } from 'express'
 import { isValid, parseISO } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { MangoQuery } from 'nano'
-import { IrrigationEventDocument, DeviceState } from '../types.js'
+import { IrrigationEventDocument } from '../types.js'
 import db from '../database.js'
-
-type IrrigationEvent = {
-  timestamp: string
-  deviceName: string
-  deviceId: number
-  state: DeviceState
-}
+import viewmodelBuilder from '../viewmodels/irrigationEvent.js'
 
 function convertTimestampToUTC(timestamp: string): string {
   const date = parseISO(timestamp)
@@ -63,15 +57,8 @@ export default async function getIrrigationEvents(req: Request, res: Response) {
   }
   try {
     const dbResponse = await db.find(query)
-    const irrigationEvents: IrrigationEvent[] = dbResponse.docs.map(
-      ({ _id, deviceName, deviceId, state }: IrrigationEventDocument) => ({
-          timestamp: _id,
-          deviceName,
-          deviceId,
-          state,
-        })
-    )
-    res.status(200).json(irrigationEvents)
+    const viewmodel = viewmodelBuilder(dbResponse.docs as IrrigationEventDocument[])
+    res.status(200).json(viewmodel)
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error)
