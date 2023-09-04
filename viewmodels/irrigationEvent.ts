@@ -6,6 +6,7 @@ export type IrrigationEventViewModel = {
   startDate: string
   endDate: string
   title: string
+  deviceId: number
 }
 
 const getOnOffPairsForDevice = (events: IrrigationEventDocument[], id: number): IrrigationEventDocument[][] => {
@@ -15,6 +16,10 @@ const getOnOffPairsForDevice = (events: IrrigationEventDocument[], id: number): 
   const offEvents = events.filter(
     ({ deviceId, state }) => deviceId === id && state === DeviceState.OFF
   )
+  if (onEvents.length === 0 || offEvents.length === 0) {
+    console.info(`No events found for device ID ${id}`)
+    return []
+  }
   if (onEvents.length !== offEvents.length) {
     console.error(
       `Number of ON events does not match number of OFF events for device ${onEvents[0].deviceName}, ID ${id}`
@@ -43,6 +48,7 @@ const builder = (dbDocuments: IrrigationEventDocument[]) => {
         startDate: roundTimestampToMinute(onEvent._id),
         // eslint-disable-next-line no-underscore-dangle
         endDate: roundTimestampToMinute(offEvent._id),
+        deviceId
       })
     )
     viewModel.push(...events)
