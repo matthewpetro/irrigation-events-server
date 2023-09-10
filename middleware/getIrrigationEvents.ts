@@ -1,58 +1,47 @@
 import { Request, Response } from 'express'
-import { isValid, parseISO } from 'date-fns'
+import { parseISO } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { MangoQuery } from 'nano'
+import { z } from 'zod'
 import { IrrigationEventDocument } from '../types.js'
 import db from '../database.js'
 import viewmodelBuilder from '../viewmodels/irrigationEvent.js'
 
-function convertTimestampToUTC(timestamp: string): string {
-  const date = parseISO(timestamp)
-  if (!isValid(date)) {
-    throw new Error('Invalid timestamp')
-  }
-  return formatInTimeZone(date, 'Z', "yyyy-MM-dd'T'HH:mm:ss.SSSX")
-}
+const timestampSchema = z
+  .string({ required_error: 'Timestamp is required', invalid_type_error: 'Must be a datetime' })
+  .datetime({ offset: true, message: 'Invalid datetime string' })
+  .transform((timestamp) => formatInTimeZone(parseISO(timestamp), 'Z', "yyyy-MM-dd'T'HH:mm:ss.SSSX"))
+
+const queryParamsSchema = z
+  .object({ startTimestamp: timestampSchema, endTimestamp: timestampSchema })
+  .required()
 
 export default async function getIrrigationEvents(req: Request, res: Response) {
-  const { startTimestamp, endTimestamp } = req.query ?? {}
-
-  if (!startTimestamp || !endTimestamp) {
-    res.status(400).send('Missing startTimestamp or endTimestamp')
+  const zodResult = queryParamsSchema.safeParse(req.query)
+  if (!zodResult.success) {
+    // eslint-disable-next-line no-console
+    console.error(zodResult.error.issues)
+    res.status(400).send(zodResult.error.issues)
     return
   }
-
-  if (typeof startTimestamp !== 'string' || typeof endTimestamp !== 'string') {
-    res.status(400).send('Invalid startTimestamp or endTimestamp')
-    return
-  }
-
-  let formattedStart: string = ''
-  let formattedEnd: string = ''
-
-  try {
-    formattedStart = convertTimestampToUTC(startTimestamp as string)
-    formattedEnd = convertTimestampToUTC(endTimestamp as string)
-  } catch (error) {
-    res.status(400).send('Invalid startTimestamp or endTimestamp')
-  }
+  const { startTimestamp, endTimestamp } = zodResult.data
 
   const query: MangoQuery = {
     selector: {
       $and: [
         {
           _id: {
-            $gt: formattedStart,
+            $gt: startTimestamp,
           },
         },
         {
           _id: {
-            $lt: formattedEnd,
+            $lt: endTimestamp,
           },
         },
       ],
     },
-    sort: [{_id: "asc"}],
+    sort: [{ _id: 'asc' }],
     limit: 10000,
   }
   try {
