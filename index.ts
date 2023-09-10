@@ -1,7 +1,7 @@
 import express, { Express, Request, Response } from 'express'
 import cors from 'cors'
-import sendEventToDb from './middleware/sendEventToDb.js'
-import getIrrigationEvents from './middleware/getIrrigationEvents.js'
+import sendEventToDb from './src/middleware/sendEventToDb.js'
+import getIrrigationEvents from './src/middleware/getIrrigationEvents.js'
 
 const PORT = 3000
 
