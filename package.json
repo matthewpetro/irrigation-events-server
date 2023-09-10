@@ -16,7 +16,8 @@
     "date-fns-tz": "^2.0.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.1",
-    "nano": "^10.1.2"
+    "nano": "^10.1.2",
+    "zod": "^3.22.2"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.0",
