@@ -22,4 +22,12 @@ type IrrigationEvent = {
   state: DeviceState
 }
 
+// Conforms to AppointmentModel from @devexpress/dx-react-scheduler
+export type IrrigationEventViewModel = {
+  startDate?: string
+  endDate?: string
+  title: string
+  deviceId: number
+}
+
 export { DeviceState, IrrigationEventDocument, IrrigationEvent }

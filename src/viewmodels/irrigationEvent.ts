@@ -1,59 +1,68 @@
-import { roundToNearestMinutes } from "date-fns"
-import { DeviceState, IrrigationEventDocument } from "../types.js"
+import { roundToNearestMinutes } from 'date-fns'
+import {
+  DeviceState,
+  IrrigationEventDocument,
+  IrrigationEventViewModel,
+} from '../types.js'
 
-// Conforms to AppointmentModel from @devexpress/dx-react-scheduler
-export type IrrigationEventViewModel = {
-  startDate: string
-  endDate: string
-  title: string
-  deviceId: number
-}
+const roundTimestampToMinute = (timestamp: string): string =>
+  roundToNearestMinutes(new Date(timestamp), {
+    nearestTo: 1,
+    roundingMethod: 'trunc',
+  }).toISOString()
 
-const getOnOffPairsForDevice = (events: IrrigationEventDocument[], id: number): IrrigationEventDocument[][] => {
-  const onEvents = events.filter(
-    ({ deviceId, state }) => deviceId === id && state === DeviceState.ON
-  )
-  const offEvents = events.filter(
-    ({ deviceId, state }) => deviceId === id && state === DeviceState.OFF
-  )
-  if (onEvents.length === 0 || offEvents.length === 0) {
-    console.info(`No events found for device ID ${id}`)
-    return []
-  }
-  if (onEvents.length !== offEvents.length) {
-    console.error(
-      `Number of ON events does not match number of OFF events for device ${onEvents[0].deviceName}, ID ${id}`
-    )
-    return []
-  }
-  const onOffPairs: IrrigationEventDocument[][] = []
-  for (let i = 0; i < onEvents.length; i += 1) {
-    onOffPairs.push([onEvents[i], offEvents[i]])
-  }
-  return onOffPairs
-}
-
-const roundTimestampToMinute = (timestamp: string): string => 
-  roundToNearestMinutes(new Date(timestamp), { nearestTo: 1, roundingMethod: 'trunc' }).toISOString()
-
-const builder = (dbDocuments: IrrigationEventDocument[]) => {
-  const uniqueDeviceIds = dbDocuments.reduce((accumulator, event) => accumulator.add(event.deviceId), new Set<number>())
-  const viewModel: IrrigationEventViewModel[] = []
-  uniqueDeviceIds.forEach((deviceId) => {
-    const onOffPairs = getOnOffPairsForDevice(dbDocuments, deviceId)
-    const events = onOffPairs.map(
-      ([onEvent, offEvent]: IrrigationEventDocument[]): IrrigationEventViewModel => ({
-        title: `${onEvent.deviceName}`,
+function createViewmodelsFromDeviceEvents(
+  deviceEvents: IrrigationEventDocument[]
+): IrrigationEventViewModel[] {
+  const viewmodels: IrrigationEventViewModel[] = []
+  let i = 0
+  while (i < deviceEvents.length) {
+    const [event, nextEvent] = deviceEvents.slice(i, i + 2)
+    if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.OFF) {
+      // Happy path: ON followed by OFF
+      viewmodels.push({
         // eslint-disable-next-line no-underscore-dangle
-        startDate: roundTimestampToMinute(onEvent._id),
+        startDate: roundTimestampToMinute(event._id),
         // eslint-disable-next-line no-underscore-dangle
-        endDate: roundTimestampToMinute(offEvent._id),
-        deviceId
+        endDate: roundTimestampToMinute(nextEvent._id),
+        title: event.deviceName,
+        deviceId: event.deviceId,
       })
-    )
-    viewModel.push(...events)
-  })
-  return viewModel
+      i += 2
+    } else if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.ON) {
+      // ON followed by ON means an OFF event is missing
+      viewmodels.push({
+        // eslint-disable-next-line no-underscore-dangle
+        startDate: roundTimestampToMinute(event._id),
+        title: event.deviceName,
+        deviceId: event.deviceId,
+      })
+      i += 1
+    } else if (event.state === DeviceState.ON && !nextEvent) {
+      // ON followed by nothing means the final OFF event is missing
+      // or the device is still on
+      viewmodels.push({
+        // eslint-disable-next-line no-underscore-dangle
+        startDate: roundTimestampToMinute(event._id),
+        title: event.deviceName,
+        deviceId: event.deviceId,
+      })
+      i += 1
+    } else if (event.state === DeviceState.OFF) {
+      // OFF means an ON event is missing
+      viewmodels.push({
+        // eslint-disable-next-line no-underscore-dangle
+        endDate: roundTimestampToMinute(event._id),
+        title: event.deviceName,
+        deviceId: event.deviceId,
+      })
+      i += 1
+    }
+  }
+  return viewmodels
 }
+
+const builder = (eventLists: IrrigationEventDocument[][]): IrrigationEventViewModel[] =>
+  eventLists.flatMap((deviceEvents) => createViewmodelsFromDeviceEvents(deviceEvents))
 
 export default builder
