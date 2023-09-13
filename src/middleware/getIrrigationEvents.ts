@@ -41,6 +41,8 @@ async function validateDeviceEventLists(
         accumulator[deviceId].push(event)
         return accumulator
       },
+      // I'd like to leave deviceId as a number, but Object.entries()
+      // would convert it to a string.
       {} as { [deviceId: string]: IrrigationEventDocument[] }
     )
   )
