@@ -41,6 +41,11 @@ function createViewmodelsFromDeviceEvents(
     } else if (event.state === DeviceState.ON && !nextEvent) {
       // ON followed by nothing means the final OFF event is missing
       // or the device is still on
+      // TODO: handle this situation better
+      // Maybe check to see if the current time is within the
+      // time range being searched for? If so, assume the device
+      // is still on, if not, assume the final OFF event is missing
+      // and do something to indicate that.
       viewmodels.push({
         // eslint-disable-next-line no-underscore-dangle
         startDate: roundTimestampToMinute(event._id),
