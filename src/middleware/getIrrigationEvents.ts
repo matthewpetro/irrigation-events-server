@@ -26,56 +26,59 @@ const shouldPrependAdditionalOnEvent = (events: IrrigationEventDocument[]) =>
 const shouldAppendAdditionalOffEvent = (events: IrrigationEventDocument[]) =>
   events && events.length >= 1 && events[0].state === DeviceState.OFF
 
-async function validateDeviceEventLists(
-  dbDocuments: IrrigationEventDocument[],
+type DeviceEventLists = { [deviceId: string]: IrrigationEventDocument[] }
+
+// Split the list of events into lists by deviceId
+const createDeviceEventLists = (dbDocuments: IrrigationEventDocument[]): DeviceEventLists =>
+  dbDocuments.reduce(
+    (accumulator, event) => {
+      const deviceId = event.deviceId.toString()
+      if (!accumulator[deviceId]) {
+        accumulator[deviceId] = []
+      }
+      accumulator[deviceId].push(event)
+      return accumulator
+    },
+    // I'd like to leave deviceId as a number, but Object.entries()
+    // would convert it to a string.
+    {} as { [deviceId: string]: IrrigationEventDocument[] }
+  )
+
+// The event list for each device may be missing an ON event at the start or an OFF event at the end.
+// This usually happens if the ON event occurred before the start of the time range being searched for or
+// if the OFF event occurs after the end of the time range. In either of those cases, we need to
+// query the database to find the missing event and add it to the list.
+async function addMissingEvents(
+  deviceEventLists: DeviceEventLists,
   startTimestamp: string,
   endTimestamp: string
 ): Promise<IrrigationEventDocument[][]> {
-  const deviceEventLists = Object.entries(
-    dbDocuments.reduce(
-      (accumulator, event) => {
-        const deviceId = event.deviceId.toString()
-        if (!accumulator[deviceId]) {
-          accumulator[deviceId] = []
-        }
-        accumulator[deviceId].push(event)
-        return accumulator
-      },
-      // I'd like to leave deviceId as a number, but Object.entries()
-      // would convert it to a string.
-      {} as { [deviceId: string]: IrrigationEventDocument[] }
-    )
-  )
-
-  const appendOnEventPromises = deviceEventLists.map(
-    async ([deviceId, deviceEvents]) => {
-      if (deviceEvents[0].state !== DeviceState.ON) {
-        // eslint-disable-next-line no-underscore-dangle
-        const query = eventsBeforeStartQueryBuilder(startTimestamp, parseInt(deviceId, 10))
-        const dbResponse = await db.find(query)
-        if (shouldPrependAdditionalOnEvent(dbResponse.docs)) {
-          deviceEvents.unshift(dbResponse.docs[0])
-        }
+  const eventListEntries = Object.entries(deviceEventLists)
+  const appendOnEventPromises = eventListEntries.map(async ([deviceId, deviceEvents]) => {
+    if (deviceEvents[0].state !== DeviceState.ON) {
+      // eslint-disable-next-line no-underscore-dangle
+      const query = eventsBeforeStartQueryBuilder(startTimestamp, parseInt(deviceId, 10))
+      const dbResponse = await db.find(query)
+      if (shouldPrependAdditionalOnEvent(dbResponse.docs)) {
+        deviceEvents.unshift(dbResponse.docs[0])
       }
     }
-  )
+  })
   await Promise.allSettled(appendOnEventPromises)
 
-  const appendOffEventPromises = deviceEventLists.map(
-    async ([deviceId, deviceEvents]) => {
-      if (deviceEvents[deviceEvents.length - 1].state !== DeviceState.OFF) {
-        // eslint-disable-next-line no-underscore-dangle
-        const query = eventsAfterEndQueryBuilder(endTimestamp, parseInt(deviceId, 10))
-        const dbResponse = await db.find(query)
-        if (shouldAppendAdditionalOffEvent(dbResponse.docs)) {
-          deviceEvents.push(dbResponse.docs[0])
-        }
+  const appendOffEventPromises = eventListEntries.map(async ([deviceId, deviceEvents]) => {
+    if (deviceEvents[deviceEvents.length - 1].state !== DeviceState.OFF) {
+      // eslint-disable-next-line no-underscore-dangle
+      const query = eventsAfterEndQueryBuilder(endTimestamp, parseInt(deviceId, 10))
+      const dbResponse = await db.find(query)
+      if (shouldAppendAdditionalOffEvent(dbResponse.docs)) {
+        deviceEvents.push(dbResponse.docs[0])
       }
     }
-  )
+  })
   await Promise.allSettled(appendOffEventPromises)
 
-  return deviceEventLists.map(([, deviceEvents]) => deviceEvents)
+  return Object.values(deviceEventLists)
 }
 
 export default async function getIrrigationEvents(req: Request, res: Response) {
@@ -89,8 +92,9 @@ export default async function getIrrigationEvents(req: Request, res: Response) {
   try {
     const { startTimestamp, endTimestamp } = zodResult.data
     const query = irrigationEventsQueryBuilder(startTimestamp, endTimestamp)
-    const dbResponse = await db.find(query)
-    const eventLists = await validateDeviceEventLists(dbResponse.docs, startTimestamp, endTimestamp)
+    const { docs } = await db.find(query)
+    const deviceEventLists = createDeviceEventLists(docs)
+    const eventLists = await addMissingEvents(deviceEventLists, startTimestamp, endTimestamp)
     const viewmodel = viewmodelBuilder(eventLists)
     res.status(200).json(viewmodel)
   } catch (error) {
