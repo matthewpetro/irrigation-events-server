@@ -46,15 +46,24 @@ function createViewmodelsFromDeviceEvents(
       // ON followed by nothing means the device is currently on or
       // the final OFF event is missing. Check the current device
       // states to determine which is the case.
-      const currentState = deviceStates[event.deviceId.toString()]
-      viewmodels.push({
-        // eslint-disable-next-line no-underscore-dangle
-        startDate: roundTimestampToMinute(event._id),
-        title: event.deviceName,
-        deviceId: event.deviceId,
-        warning: currentState !== DeviceState.ON ? Warning.MISSING_OFF : undefined,
-        currentlyOn: currentState === DeviceState.ON,
-      })
+      viewmodels.push(
+        deviceStates[event.deviceId.toString()] === DeviceState.ON
+          ? {
+              // eslint-disable-next-line no-underscore-dangle
+              startDate: roundTimestampToMinute(event._id),
+              endDate: roundTimestampToMinute(new Date().toISOString()),
+              title: event.deviceName,
+              deviceId: event.deviceId,
+              currentlyOn: true,
+            }
+          : {
+              // eslint-disable-next-line no-underscore-dangle
+              startDate: roundTimestampToMinute(event._id),
+              title: event.deviceName,
+              deviceId: event.deviceId,
+              warning: Warning.MISSING_OFF,
+            }
+      )
       i += 1
     } else if (event.state === DeviceState.OFF) {
       // OFF means an ON event is missing
