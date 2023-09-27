@@ -5,6 +5,7 @@ import {
   IrrigationEventViewModel,
   Warning,
 } from '../types.js'
+import type { DeviceStates } from '../types.js'
 
 const roundTimestampToMinute = (timestamp: string): string =>
   roundToNearestMinutes(new Date(timestamp), {
@@ -13,7 +14,8 @@ const roundTimestampToMinute = (timestamp: string): string =>
   }).toISOString()
 
 function createViewmodelsFromDeviceEvents(
-  deviceEvents: IrrigationEventDocument[]
+  deviceEvents: IrrigationEventDocument[],
+  deviceStates: DeviceStates
 ): IrrigationEventViewModel[] {
   const viewmodels: IrrigationEventViewModel[] = []
   let i = 0
@@ -41,15 +43,17 @@ function createViewmodelsFromDeviceEvents(
       })
       i += 1
     } else if (event.state === DeviceState.ON && !nextEvent) {
-      // ON followed by nothing probably means the device is currently on.
-      // It may also mean that the final OFF event is missing, but
-      // it's more likely that the device is still on.
+      // ON followed by nothing means the device is currently on or
+      // the final OFF event is missing. Check the current device
+      // states to determine which is the case.
+      const currentState = deviceStates[event.deviceId.toString()]
       viewmodels.push({
         // eslint-disable-next-line no-underscore-dangle
         startDate: roundTimestampToMinute(event._id),
         title: event.deviceName,
         deviceId: event.deviceId,
-        warning: Warning.CURRENTLY_ON,
+        warning: currentState !== DeviceState.ON ? Warning.MISSING_OFF : undefined,
+        currentlyOn: currentState === DeviceState.ON,
       })
       i += 1
     } else if (event.state === DeviceState.OFF) {
@@ -67,7 +71,10 @@ function createViewmodelsFromDeviceEvents(
   return viewmodels
 }
 
-const builder = (eventLists: IrrigationEventDocument[][]): IrrigationEventViewModel[] =>
-  eventLists.flatMap((deviceEvents) => createViewmodelsFromDeviceEvents(deviceEvents))
+const builder = (
+  eventLists: IrrigationEventDocument[][],
+  deviceStates: DeviceStates
+): IrrigationEventViewModel[] =>
+  eventLists.flatMap((deviceEvents) => createViewmodelsFromDeviceEvents(deviceEvents, deviceStates))
 
 export default builder

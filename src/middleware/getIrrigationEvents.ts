@@ -1,9 +1,10 @@
 import { Request, Response } from 'express'
-import { parseISO } from 'date-fns'
+import { isWithinInterval, parseISO } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { z } from 'zod'
 import { DeviceState, IrrigationEventDocument } from '../types.js'
 import db from '../database.js'
+import getAllDeviceStates from '../makerApi.js'
 import viewmodelBuilder from '../viewmodels/irrigationEvent.js'
 import irrigationEventsQueryBuilder from '../queries/irrigationEvents.js'
 import eventsBeforeStartQueryBuilder from '../queries/eventsBeforeStart.js'
@@ -25,6 +26,9 @@ const shouldPrependAdditionalOnEvent = (events: IrrigationEventDocument[]) =>
 
 const shouldAppendAdditionalOffEvent = (events: IrrigationEventDocument[]) =>
   events && events.length >= 1 && events[0].state === DeviceState.OFF
+
+const isCurrentTimeWithinInterval = (startTimestamp: string, endTimestamp: string) =>
+  isWithinInterval(Date.now(), { start: parseISO(startTimestamp), end: parseISO(endTimestamp) })
 
 type DeviceEventLists = { [deviceId: string]: IrrigationEventDocument[] }
 
@@ -95,7 +99,10 @@ export default async function getIrrigationEvents(req: Request, res: Response) {
     const { docs } = await db.find(query)
     const deviceEventLists = createDeviceEventLists(docs)
     const eventLists = await addMissingEvents(deviceEventLists, startTimestamp, endTimestamp)
-    const viewmodel = viewmodelBuilder(eventLists)
+    const currentDeviceStates = isCurrentTimeWithinInterval(startTimestamp, endTimestamp)
+      ? await getAllDeviceStates()
+      : {}
+    const viewmodel = viewmodelBuilder(eventLists, currentDeviceStates)
     res.status(200).json(viewmodel)
   } catch (error) {
     // eslint-disable-next-line no-console
