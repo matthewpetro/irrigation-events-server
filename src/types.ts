@@ -8,6 +8,10 @@ const DeviceState = {
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 type DeviceState = (typeof DeviceState)[keyof typeof DeviceState]
 
+type DeviceStates = {
+  [deviceId: string]: DeviceState | undefined
+}
+
 interface IrrigationEventDocument extends MaybeDocument {
   _id: string
   deviceName: string
@@ -25,7 +29,6 @@ type IrrigationEvent = {
 const Warning = {
   MISSING_ON: 'The ON event is missing. The time shown is the OFF time.',
   MISSING_OFF: 'The OFF event is missing. The time shown is the ON time.',
-  CURRENTLY_ON: 'The device is currently ON.',
 } as const
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -38,6 +41,7 @@ export type IrrigationEventViewModel = {
   title: string
   deviceId: number
   warning?: Warning
+  currentlyOn?: boolean
 }
 
-export { DeviceState, IrrigationEventDocument, IrrigationEvent, Warning }
+export { DeviceState, DeviceStates, IrrigationEventDocument, IrrigationEvent, Warning }
