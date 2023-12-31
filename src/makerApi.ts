@@ -16,7 +16,7 @@ type MakerDeviceDetails = {
 
 async function getAllDeviceStates() {
   const data = await instance.get<MakerDeviceDetails[]>('/all').then((response) => response.data)
-  return Object.fromEntries(data.map((device) => ([device.id, device.attributes.switch])))
+  return Object.fromEntries(data.map((device) => [device.id, device.attributes.switch]))
 }
 
 export default getAllDeviceStates
