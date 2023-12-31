@@ -7,7 +7,7 @@
     "start": "node --require dotenv/config dist/index.js dotenv_config_path=.env.local",
     "start:prod": "node dist/index.js",
     "checkFormat": "prettier --check \"**/*.ts\"",
-    "lint": "eslint . --ext .js,.ts"
+    "lint": "eslint . --ext .ts"
   },
   "dependencies": {
     "@types/cors": "^2.8.13",
