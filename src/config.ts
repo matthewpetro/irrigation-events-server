@@ -1,3 +1,0 @@
-export const IRRIGATION_DEVICE_IDS = [768, 769, 675, 676, 852, 677, 813, 767]
-
-export const RAIN_DELAY_DEVICE_ID = 879

@@ -6,7 +6,9 @@ import {
   Warning,
 } from '../types.js'
 import type { DeviceStates } from '../types.js'
-import { RAIN_DELAY_DEVICE_ID } from '../config.js'
+
+const RAIN_DELAY_DEVICE_ID =
+  process.env.RAIN_DELAY_DEVICE_ID === undefined ? NaN : parseInt(process.env.RAIN_DELAY_DEVICE_ID, 10)
 
 const roundTimestampToMinute = (timestamp: string): string =>
   roundToNearestMinutes(new Date(timestamp), {
