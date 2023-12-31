@@ -6,6 +6,7 @@ import {
   Warning,
 } from '../types.js'
 import type { DeviceStates } from '../types.js'
+import { RAIN_DELAY_DEVICE_ID } from '../config.js'
 
 const roundTimestampToMinute = (timestamp: string): string =>
   roundToNearestMinutes(new Date(timestamp), {
@@ -80,10 +81,17 @@ function createViewmodelsFromDeviceEvents(
   return viewmodels
 }
 
+const markRainDelayEventAsAllDayEvent = (irrigationEventViewModel: IrrigationEventViewModel) =>
+  irrigationEventViewModel.deviceId === RAIN_DELAY_DEVICE_ID
+    ? { ...irrigationEventViewModel, allDay: true }
+    : irrigationEventViewModel
+
 const builder = (
   eventLists: IrrigationEventDocument[][],
   deviceStates: DeviceStates
 ): IrrigationEventViewModel[] =>
-  eventLists.flatMap((deviceEvents) => createViewmodelsFromDeviceEvents(deviceEvents, deviceStates))
+  eventLists
+    .flatMap((deviceEvents) => createViewmodelsFromDeviceEvents(deviceEvents, deviceStates))
+    .map(markRainDelayEventAsAllDayEvent)
 
 export default builder

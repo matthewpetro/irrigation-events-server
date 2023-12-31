@@ -42,6 +42,7 @@ export type IrrigationEventViewModel = {
   deviceId: number
   warning?: Warning
   currentlyOn?: boolean
+  allDay?: boolean
 }
 
 export { DeviceState, DeviceStates, IrrigationEventDocument, IrrigationEvent, Warning }
