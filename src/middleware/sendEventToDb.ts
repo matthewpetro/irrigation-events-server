@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { z } from 'zod'
+import Nano from 'nano'
 import { DeviceState, IrrigationEventDocument } from '../types.js'
-import db from '../database.js'
 
 type MakerApiEventContent = {
   name: string
@@ -26,30 +26,40 @@ const makerApiEventContentSchema = z.object({
 })
 const makerApiEventSchema = z.object({ content: makerApiEventContentSchema })
 
-const makerEventToIrrigationEvent = (event: MakerApiEvent): IrrigationEventDocument => {
-  const { displayName, value, deviceId } = event.content
-  return {
-    _id: new Date().toISOString(),
-    deviceName: displayName,
-    deviceId: parseInt(deviceId, 10),
-    state: value as DeviceState,
+class SendEventToDb {
+  private db: Nano.DocumentScope<IrrigationEventDocument>
+
+  constructor(db: Nano.DocumentScope<IrrigationEventDocument>) {
+    this.db = db
+  }
+
+  private static makerEventToIrrigationEvent(event: MakerApiEvent): IrrigationEventDocument {
+    const { displayName, value, deviceId } = event.content
+    return {
+      _id: new Date().toISOString(),
+      deviceName: displayName,
+      deviceId: parseInt(deviceId, 10),
+      state: value as DeviceState,
+    }
+  }
+
+  public async sendEventToDb(req: Request, res: Response) {
+    const zodResult = makerApiEventSchema.passthrough().safeParse(req.body)
+    if (!zodResult.success) {
+      // eslint-disable-next-line no-console
+      console.error(zodResult.error.issues)
+      res.status(400).send(zodResult.error.issues)
+      return
+    }
+    try {
+      const irrigationEvent = SendEventToDb.makerEventToIrrigationEvent(zodResult.data as MakerApiEvent)
+      await this.db.insert(irrigationEvent)
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error)
+    }
+    res.status(200).end()
   }
 }
 
-export default async function sendEventToDb(req: Request, res: Response) {
-  const zodResult = makerApiEventSchema.passthrough().safeParse(req.body)
-  if (!zodResult.success) {
-    // eslint-disable-next-line no-console
-    console.error(zodResult.error.issues)
-    res.status(400).send(zodResult.error.issues)
-    return
-  }
-  try {
-    const irrigationEvent = makerEventToIrrigationEvent(zodResult.data as MakerApiEvent)
-    await db.insert(irrigationEvent)
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(error)
-  }
-  res.status(200).end()
-}
+export default SendEventToDb;
