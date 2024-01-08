@@ -1,8 +1,8 @@
 import express, { Express, Request, Response } from 'express'
 import cors from 'cors'
-import db from './database.js'
+import DbFunctions from './database.js'
 import SendEventToDb from './middleware/sendEventToDb.js'
-import getIrrigationEvents from './middleware/getIrrigationEvents.js'
+import GetIrrigationEvents from './middleware/getIrrigationEvents.js'
 
 const app: Express = express()
 app.use(express.json())
@@ -12,10 +12,10 @@ app.get('/', (req: Request, res: Response) => {
   res.send('OK')
 })
 
-const sendEventToDb = new SendEventToDb(db)
+const dbFunctions = DbFunctions.getInstance()
 
-app.post('/irrigationEvent', (req, res) => sendEventToDb.sendEventToDb(req, res))
+app.post('/irrigationEvent', new SendEventToDb(dbFunctions).sendEventToDb)
 
-app.get('/irrigationEvents', getIrrigationEvents)
+app.get('/irrigationEvents', new GetIrrigationEvents(dbFunctions).getIrrigationEvents)
 
 export default app

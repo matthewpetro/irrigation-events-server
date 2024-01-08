@@ -2,13 +2,12 @@ import { Request, Response } from 'express'
 import { isWithinInterval, parseISO } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { z } from 'zod'
+import { DatabaseFunctions } from '../database.js'
 import { DeviceState, IrrigationEventDocument } from '../types.js'
-import db from '../database.js'
 import getAllDeviceStates from '../makerApi.js'
 import viewmodelBuilder from '../viewmodels/irrigationEvent.js'
-import irrigationEventsQueryBuilder from '../queries/irrigationEvents.js'
-import eventsBeforeStartQueryBuilder from '../queries/eventsBeforeStart.js'
-import eventsAfterEndQueryBuilder from '../queries/eventsAfterEnd.js'
+
+type DeviceEventLists = { [deviceId: string]: IrrigationEventDocument[] }
 
 const timestampSchema = z
   .string({ required_error: 'Timestamp is required', invalid_type_error: 'Must be a datetime' })
@@ -30,8 +29,6 @@ const shouldAppendAdditionalOffEvent = (events: IrrigationEventDocument[]) =>
 const isCurrentTimeWithinInterval = (startTimestamp: string, endTimestamp: string) =>
   isWithinInterval(Date.now(), { start: parseISO(startTimestamp), end: parseISO(endTimestamp) })
 
-type DeviceEventLists = { [deviceId: string]: IrrigationEventDocument[] }
-
 // Split the list of events into lists by deviceId
 const createDeviceEventLists = (dbDocuments: IrrigationEventDocument[]): DeviceEventLists =>
   dbDocuments.reduce(
@@ -48,65 +45,72 @@ const createDeviceEventLists = (dbDocuments: IrrigationEventDocument[]): DeviceE
     {} as { [deviceId: string]: IrrigationEventDocument[] }
   )
 
-// The event list for each device may be missing an ON event at the start or an OFF event at the end.
-// This usually happens if the ON event occurred before the start of the time range being searched for or
-// if the OFF event occurs after the end of the time range. In either of those cases, we need to
-// query the database to find the missing event and add it to the list.
-async function addMissingEvents(
-  deviceEventLists: DeviceEventLists,
-  startTimestamp: string,
-  endTimestamp: string
-): Promise<IrrigationEventDocument[][]> {
-  const eventListEntries = Object.entries(deviceEventLists)
-  const appendOnEventPromises = eventListEntries.map(async ([deviceId, deviceEvents]) => {
-    if (deviceEvents[0].state !== DeviceState.ON) {
-      // eslint-disable-next-line no-underscore-dangle
-      const query = eventsBeforeStartQueryBuilder(startTimestamp, parseInt(deviceId, 10))
-      const dbResponse = await db.find(query)
-      if (shouldPrependAdditionalOnEvent(dbResponse.docs)) {
-        deviceEvents.unshift(dbResponse.docs[0])
-      }
-    }
-  })
-  await Promise.allSettled(appendOnEventPromises)
+class GetIrrigationEvents {
+  private dbFunctions: DatabaseFunctions
 
-  const appendOffEventPromises = eventListEntries.map(async ([deviceId, deviceEvents]) => {
-    if (deviceEvents[deviceEvents.length - 1].state !== DeviceState.OFF) {
-      // eslint-disable-next-line no-underscore-dangle
-      const query = eventsAfterEndQueryBuilder(endTimestamp, parseInt(deviceId, 10))
-      const dbResponse = await db.find(query)
-      if (shouldAppendAdditionalOffEvent(dbResponse.docs)) {
-        deviceEvents.push(dbResponse.docs[0])
-      }
-    }
-  })
-  await Promise.allSettled(appendOffEventPromises)
+  constructor(dbFunctions: DatabaseFunctions) {
+    this.dbFunctions = dbFunctions
+  }
 
-  return Object.values(deviceEventLists)
+  public readonly getIrrigationEvents = async (req: Request, res: Response) => {
+    const zodResult = queryParamsSchema.safeParse(req.query)
+    if (!zodResult.success) {
+      // eslint-disable-next-line no-console
+      console.error(zodResult.error.issues)
+      res.status(400).send(zodResult.error.issues)
+      return
+    }
+    try {
+      const { startTimestamp, endTimestamp } = zodResult.data
+      const { docs } = await this.dbFunctions.getIrriationEvents(startTimestamp, endTimestamp)
+      const deviceEventLists = createDeviceEventLists(docs)
+      const eventLists = await this.addMissingEvents(deviceEventLists, startTimestamp, endTimestamp)
+      const currentDeviceStates = isCurrentTimeWithinInterval(startTimestamp, endTimestamp)
+        ? await getAllDeviceStates()
+        : {}
+      const viewmodel = viewmodelBuilder(eventLists, currentDeviceStates)
+      res.status(200).json(viewmodel)
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error)
+      res.status(500).send('Internal server error')
+    }
+  }
+
+  private readonly addMissingEvents = async (
+    deviceEventLists: DeviceEventLists,
+    startTimestamp: string,
+    endTimestamp: string
+  ): Promise<IrrigationEventDocument[][]> => {
+    const eventListEntries = Object.entries(deviceEventLists)
+    const appendOnEventPromises = eventListEntries.map(async ([deviceId, deviceEvents]) => {
+      if (deviceEvents[0].state !== DeviceState.ON) {
+        const dbResponse = await this.dbFunctions.getEventsBeforeStart(
+          startTimestamp,
+          parseInt(deviceId, 10)
+        )
+        if (shouldPrependAdditionalOnEvent(dbResponse.docs)) {
+          deviceEvents.unshift(dbResponse.docs[0])
+        }
+      }
+    })
+    await Promise.allSettled(appendOnEventPromises)
+
+    const appendOffEventPromises = eventListEntries.map(async ([deviceId, deviceEvents]) => {
+      if (deviceEvents[deviceEvents.length - 1].state !== DeviceState.OFF) {
+        const dbResponse = await this.dbFunctions.getEventsAfterEnd(
+          endTimestamp,
+          parseInt(deviceId, 10)
+        )
+        if (shouldAppendAdditionalOffEvent(dbResponse.docs)) {
+          deviceEvents.push(dbResponse.docs[0])
+        }
+      }
+    })
+    await Promise.allSettled(appendOffEventPromises)
+
+    return Object.values(deviceEventLists)
+  }
 }
 
-export default async function getIrrigationEvents(req: Request, res: Response) {
-  const zodResult = queryParamsSchema.safeParse(req.query)
-  if (!zodResult.success) {
-    // eslint-disable-next-line no-console
-    console.error(zodResult.error.issues)
-    res.status(400).send(zodResult.error.issues)
-    return
-  }
-  try {
-    const { startTimestamp, endTimestamp } = zodResult.data
-    const query = irrigationEventsQueryBuilder(startTimestamp, endTimestamp)
-    const { docs } = await db.find(query)
-    const deviceEventLists = createDeviceEventLists(docs)
-    const eventLists = await addMissingEvents(deviceEventLists, startTimestamp, endTimestamp)
-    const currentDeviceStates = isCurrentTimeWithinInterval(startTimestamp, endTimestamp)
-      ? await getAllDeviceStates()
-      : {}
-    const viewmodel = viewmodelBuilder(eventLists, currentDeviceStates)
-    res.status(200).json(viewmodel)
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(error)
-    res.status(500).send('Internal server error')
-  }
-}
+export default GetIrrigationEvents

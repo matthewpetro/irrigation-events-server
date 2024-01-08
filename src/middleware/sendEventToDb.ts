@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { z } from 'zod'
-import Nano from 'nano'
+import { DatabaseFunctions } from '../database.js'
 import { DeviceState, IrrigationEventDocument } from '../types.js'
 
 type MakerApiEventContent = {
@@ -26,24 +26,21 @@ const makerApiEventContentSchema = z.object({
 })
 const makerApiEventSchema = z.object({ content: makerApiEventContentSchema })
 
+const makerEventToIrrigationEvent = (event: MakerApiEvent): IrrigationEventDocument => ({
+  _id: new Date().toISOString(),
+  deviceName: event.content.displayName,
+  deviceId: parseInt(event.content.deviceId, 10),
+  state: event.content.value as DeviceState,
+})
+
 class SendEventToDb {
-  private db: Nano.DocumentScope<IrrigationEventDocument>
+  private dbFunctions: DatabaseFunctions
 
-  constructor(db: Nano.DocumentScope<IrrigationEventDocument>) {
-    this.db = db
+  constructor(dbFunctions: DatabaseFunctions) {
+    this.dbFunctions = dbFunctions
   }
 
-  private static makerEventToIrrigationEvent(event: MakerApiEvent): IrrigationEventDocument {
-    const { displayName, value, deviceId } = event.content
-    return {
-      _id: new Date().toISOString(),
-      deviceName: displayName,
-      deviceId: parseInt(deviceId, 10),
-      state: value as DeviceState,
-    }
-  }
-
-  public async sendEventToDb(req: Request, res: Response) {
+  public readonly sendEventToDb = async (req: Request, res: Response) => {
     const zodResult = makerApiEventSchema.passthrough().safeParse(req.body)
     if (!zodResult.success) {
       // eslint-disable-next-line no-console
@@ -52,8 +49,8 @@ class SendEventToDb {
       return
     }
     try {
-      const irrigationEvent = SendEventToDb.makerEventToIrrigationEvent(zodResult.data as MakerApiEvent)
-      await this.db.insert(irrigationEvent)
+      const irrigationEvent = makerEventToIrrigationEvent(zodResult.data as MakerApiEvent)
+      await this.dbFunctions.insertIrrigationEvent(irrigationEvent)
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error)
@@ -62,4 +59,4 @@ class SendEventToDb {
   }
 }
 
-export default SendEventToDb;
+export default SendEventToDb
