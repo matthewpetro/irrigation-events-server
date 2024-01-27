@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { IrrigationEventsService } from './irrigation-events.service'
+import { IrrigationEventsService } from '@/irrigation-events/irrigation-events.service'
 
 describe('IrrigationEventsService', () => {
   let service: IrrigationEventsService

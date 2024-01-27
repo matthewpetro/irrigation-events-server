@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { IrrigationEventsController } from './irrigation-events.controller'
+import { IrrigationEventsController } from '@/irrigation-events/irrigation-events.controller'
 
 describe('IrrigationEventsController', () => {
   let controller: IrrigationEventsController
