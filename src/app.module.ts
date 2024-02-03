@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common'
 import { AppController } from '@/app.controller'
 import { AppService } from '@/app.service'
-import { IrrigationEventsController } from '@/irrigation-events/irrigation-events.controller'
-import { IrrigationEventsService } from '@/irrigation-events/irrigation-events.service'
+import { ConfigModule } from '@nestjs/config'
+import { IrrigationEventsModule } from './irrigation-events/irrigation-events.module'
 
 @Module({
-  imports: [],
-  controllers: [AppController, IrrigationEventsController],
-  providers: [AppService, IrrigationEventsService],
+  imports: [ConfigModule.forRoot({ envFilePath: '.env.local' }), IrrigationEventsModule],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
