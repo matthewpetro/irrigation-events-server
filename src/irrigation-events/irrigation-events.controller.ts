@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common'
+import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common'
 import { IrrigationEventsService } from './irrigation-events.service'
 import { IrrigationEventDocument } from './interfaces/irrigation-event-document.interface'
 import { MakerApiEventDto } from './dto/maker-api-event-dto'
+import { IsISO8601 } from 'class-validator'
 
 const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiEventDto) =>
   ({
@@ -11,6 +12,12 @@ const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiE
     deviceId,
   }) as IrrigationEventDocument
 
+class QueryParameters {
+  @IsISO8601()
+  startTimestamp: string
+  @IsISO8601()
+  endTimestamp: string
+}
 @Controller('irrigation-events')
 export class IrrigationEventsController {
   constructor(private irrigationEventsService: IrrigationEventsService) {}
@@ -24,7 +31,9 @@ export class IrrigationEventsController {
   }
 
   @Get()
-  async get() {
-    return {}
+  @UsePipes(new ValidationPipe())
+  async get(@Query() { startTimestamp, endTimestamp }: QueryParameters) {
+    console.log(`start: ${startTimestamp}, end: ${endTimestamp}`)
+    const irrigationEvents = await this.irrigationEventsService.getIrrigationEvents(startTimestamp, endTimestamp)
   }
 }
