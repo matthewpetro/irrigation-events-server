@@ -6,5 +6,4 @@ export default interface EnvironmentVariables {
   DB_AUTH_REFRESH_MINUTES: number
   MAKER_API_URL: string
   MAKER_API_ACCESS_TOKEN: string
-  RAIN_DELAY_DEVICE_ID: number
 }
