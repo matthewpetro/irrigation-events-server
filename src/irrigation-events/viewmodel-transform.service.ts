@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { roundToNearestMinutes } from 'date-fns'
 import { IrrigationEventDocument } from './interfaces/irrigation-event-document.interface'
 import { DeviceStates } from './interfaces/device-states.interface'
-import { IrrigationEventViewmodel } from './interfaces/irrigation-event-viewmodel'
+import { IrrigationEventViewmodel } from './interfaces/irrigation-event-viewmodel.interface'
 import { DeviceState } from './enums/device-state.interface'
 import { Warning } from './enums/warning.interface'
 
