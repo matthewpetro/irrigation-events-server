@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { roundToNearestMinutes } from 'date-fns'
-import { IrrigationEventDocument } from './interfaces/irrigation-event-document.interface'
-import { DeviceStates } from './interfaces/device-states.interface'
-import { IrrigationEventViewmodel } from './interfaces/irrigation-event-viewmodel.interface'
+import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
 import { DeviceState } from './enums/device-state.interface'
 import { Warning } from './enums/warning.interface'
+import { DeviceEvents } from './device-events'
 
 const roundTimestampToMinute = (timestamp: string): string =>
   roundToNearestMinutes(new Date(timestamp), {
@@ -12,14 +11,12 @@ const roundTimestampToMinute = (timestamp: string): string =>
     roundingMethod: 'trunc',
   }).toISOString()
 
-function createViewmodelsFromDeviceEvents(
-  deviceEvents: IrrigationEventDocument[],
-  deviceStates: DeviceStates
-): IrrigationEventViewmodel[] {
+function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): IrrigationEventViewmodel[] {
   const viewmodels: IrrigationEventViewmodel[] = []
+  const events = deviceEvents.getEvents()
   let i = 0
-  while (i < deviceEvents.length) {
-    const [event, nextEvent] = deviceEvents.slice(i, i + 2)
+  while (i < events.length) {
+    const [event, nextEvent] = events.slice(i, i + 2)
     if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.OFF) {
       // Happy path: ON followed by OFF
       viewmodels.push({
@@ -46,7 +43,7 @@ function createViewmodelsFromDeviceEvents(
       // the final OFF event is missing. Check the current device
       // states to determine which is the case.
       viewmodels.push(
-        deviceStates[event.deviceId.toString()] === DeviceState.ON
+        deviceEvents.getCurrentDeviceState() === DeviceState.ON
           ? {
               // eslint-disable-next-line no-underscore-dangle
               startDate: roundTimestampToMinute(event._id),
@@ -81,7 +78,7 @@ function createViewmodelsFromDeviceEvents(
 
 @Injectable()
 export class ViewmodelTransformService {
-  public transform(eventLists: IrrigationEventDocument[][], deviceStates: DeviceStates): IrrigationEventViewmodel[] {
-    return eventLists.flatMap((deviceEvents) => createViewmodelsFromDeviceEvents(deviceEvents, deviceStates))
+  public transform(deviceEventsList: DeviceEvents[]): IrrigationEventViewmodel[] {
+    return deviceEventsList.flatMap((deviceEvents) => createViewmodelsFromDeviceEvents(deviceEvents))
   }
 }

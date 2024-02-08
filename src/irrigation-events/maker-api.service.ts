@@ -18,6 +18,6 @@ export class MakerApiService {
   }
   public async getAllDeviceStates() {
     const data = await this.axiosInstance.get<MakerDeviceDetails[]>('/all').then((response) => response.data)
-    return Object.fromEntries(data.map((device) => [device.id, device.attributes.switch])) as DeviceStates
+    return Object.fromEntries(data.map((device) => [parseInt(device.id, 10), device.attributes.switch])) as DeviceStates
   }
 }
