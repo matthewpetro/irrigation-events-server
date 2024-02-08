@@ -8,8 +8,11 @@ import * as queryBuilders from './queries'
 @Injectable()
 export class IrrigationEventsService {
   private db: DocumentScope<IrrigationEventDocument>
+  private intervalTimeout: NodeJS.Timeout
 
-  public constructor(private configService: ConfigService<EnvironmentVariables, true>) {
+  public constructor(private configService: ConfigService<EnvironmentVariables, true>) {}
+
+  async onModuleInit() {
     const nano = Nano({
       url: this.configService.get<string>('COUCHDB_URL', { infer: true }),
       requestDefaults: {
@@ -26,10 +29,14 @@ export class IrrigationEventsService {
         this.configService.get<string>('DB_USERNAME', { infer: true }),
         this.configService.get<string>('DB_PASSWORD', { infer: true })
       )
-    nanoAuth()
+    await nanoAuth()
 
     const authRefreshMinutes: number = this.configService.get<number>('DB_AUTH_REFRESH_MINUTES', { infer: true })
-    setInterval(nanoAuth, authRefreshMinutes * 60 * 1000)
+    this.intervalTimeout = setInterval(nanoAuth, authRefreshMinutes * 60 * 1000)
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.intervalTimeout)
   }
 
   private async executeQuery(query: Nano.MangoQuery) {
