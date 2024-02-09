@@ -3,7 +3,17 @@ import Nano, { DocumentScope } from 'nano'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
 import { IrrigationEventDocument } from './interfaces/irrigation-event-document.interface'
+import { IrrigationEvent } from './domain/irrigation-event'
 import * as queryBuilders from './queries'
+import { MakerApiEventDto } from './dto/maker-api-event.dto'
+
+const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiEventDto) =>
+  ({
+    _id: new Date().toISOString(),
+    deviceName: displayName,
+    state: value,
+    deviceId,
+  }) as IrrigationEventDocument
 
 @Injectable()
 export class IrrigationEventsService {
@@ -44,19 +54,24 @@ export class IrrigationEventsService {
     return result.docs
   }
 
-  public async insertIrrigationEvent(irrigationEvent: IrrigationEventDocument) {
-    await this.db.insert(irrigationEvent)
+  public async insertIrrigationEvent(irrigationEvent: MakerApiEventDto) {
+    await this.db.insert(makerEventToIrrigationEvent(irrigationEvent))
   }
 
   public async getIrrigationEvents(startTimestamp: string, endTimestamp: string) {
-    return this.executeQuery(queryBuilders.irrigationEventsQueryBuilder(startTimestamp, endTimestamp))
+    const dbDocuments = await this.executeQuery(
+      queryBuilders.irrigationEventsQueryBuilder(startTimestamp, endTimestamp)
+    )
+    return dbDocuments.map((dbDocument) => new IrrigationEvent(dbDocument))
   }
 
   public async getEventsBeforeStart(startTimestamp: string, deviceId: number) {
-    return this.executeQuery(queryBuilders.eventsBeforeStartQueryBuilder(startTimestamp, deviceId))
+    const dbDocuments = await this.executeQuery(queryBuilders.eventsBeforeStartQueryBuilder(startTimestamp, deviceId))
+    return dbDocuments.map((dbDocument) => new IrrigationEvent(dbDocument))
   }
 
   public async getEventsAfterEnd(endTimestamp: string, deviceId: number) {
-    return this.executeQuery(queryBuilders.eventsAfterEndQueryBuilder(endTimestamp, deviceId))
+    const dbDocuments = await this.executeQuery(queryBuilders.eventsAfterEndQueryBuilder(endTimestamp, deviceId))
+    return dbDocuments.map((dbDocument) => new IrrigationEvent(dbDocument))
   }
 }

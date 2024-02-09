@@ -2,12 +2,12 @@ import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe } from '@n
 import { IsISO8601 } from 'class-validator'
 import { isWithinInterval, parseISO } from 'date-fns'
 import { IrrigationEventsService } from './irrigation-events.service'
-import { IrrigationEventDocument } from './interfaces/irrigation-event-document.interface'
+import { IrrigationEvent } from './domain/irrigation-event'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
 import { DeviceState } from './enums/device-state.interface'
 import { MakerApiService } from './maker-api.service'
 import { ViewmodelTransformService } from './viewmodel-transform.service'
-import { DeviceEvents } from './device-events'
+import { DeviceEvents } from './domain/device-events'
 
 class QueryParameters {
   @IsISO8601()
@@ -19,22 +19,14 @@ class QueryParameters {
 const isCurrentTimeWithinInterval = (startTimestamp: string, endTimestamp: string) =>
   isWithinInterval(Date.now(), { start: parseISO(startTimestamp), end: parseISO(endTimestamp) })
 
-const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiEventDto) =>
-  ({
-    _id: new Date().toISOString(),
-    deviceName: displayName,
-    state: value,
-    deviceId,
-  }) as IrrigationEventDocument
-
-const createDeviceEvents = (dbDocuments: IrrigationEventDocument[]): DeviceEvents[] => {
+const createDeviceEvents = (irrigationEvents: IrrigationEvent[]): DeviceEvents[] => {
   const deviceEvents: DeviceEvents[] = []
   const deviceIds = new Set<number>()
-  dbDocuments.forEach((event) => {
-    deviceIds.add(event.deviceId)
+  irrigationEvents.forEach((event) => {
+    deviceIds.add(event.getDeviceId())
   })
   deviceIds.forEach((deviceId) => {
-    const events = dbDocuments.filter((event) => event.deviceId === deviceId)
+    const events = irrigationEvents.filter((event) => event.getDeviceId() === deviceId)
     deviceEvents.push(new DeviceEvents(deviceId, events))
   })
   return deviceEvents
@@ -53,7 +45,7 @@ export class IrrigationEventsController {
     new ValidationPipe({ transform: true, whitelist: true, transformOptions: { enableImplicitConversion: true } })
   )
   async create(@Body('content') makerApiEventContent: MakerApiEventDto) {
-    this.irrigationEventsService.insertIrrigationEvent(makerEventToIrrigationEvent(makerApiEventContent))
+    this.irrigationEventsService.insertIrrigationEvent(makerApiEventContent)
   }
 
   @Get()
@@ -74,12 +66,12 @@ export class IrrigationEventsController {
     endTimestamp: string
   ): Promise<void> {
     const appendOnEventPromises = deviceEventLists.map(async (deviceEvents) => {
-      if (deviceEvents.getFirstEvent().state !== DeviceState.ON) {
+      if (deviceEvents.getFirstEvent().getState() !== DeviceState.ON) {
         const eventsBeforeStart = await this.irrigationEventsService.getEventsBeforeStart(
           startTimestamp,
           deviceEvents.getDeviceId()
         )
-        if (eventsBeforeStart[0]?.state === DeviceState.ON) {
+        if (eventsBeforeStart[0]?.getState() === DeviceState.ON) {
           deviceEvents.addEvent(eventsBeforeStart[0])
         }
       }
@@ -87,12 +79,12 @@ export class IrrigationEventsController {
     await Promise.allSettled(appendOnEventPromises)
 
     const appendOffEventPromises = deviceEventLists.map(async (deviceEvents) => {
-      if (deviceEvents.getLastEvent().state !== DeviceState.OFF) {
+      if (deviceEvents.getLastEvent().getState() !== DeviceState.OFF) {
         const eventsAfterEnd = await this.irrigationEventsService.getEventsAfterEnd(
           endTimestamp,
           deviceEvents.getDeviceId()
         )
-        if (eventsAfterEnd[0]?.state === DeviceState.OFF) {
+        if (eventsAfterEnd[0]?.getState() === DeviceState.OFF) {
           deviceEvents.addEvent(eventsAfterEnd[0])
         }
       }
@@ -102,9 +94,9 @@ export class IrrigationEventsController {
 
   private async addCurrentDeviceStates(deviceEventsList: DeviceEvents[]): Promise<void> {
     const deviceDetails = await this.makerApiService.getAllDeviceDetails()
-    deviceEventsList.forEach((device) => {
-      const currentDeviceState = deviceDetails[device.getDeviceId()]
-      device.setCurrentDeviceState(currentDeviceState)
+    deviceEventsList.forEach((deviceEvents) => {
+      const currentDeviceState = deviceDetails[deviceEvents.getDeviceId()]
+      deviceEvents.setCurrentDeviceState(currentDeviceState)
     })
   }
 }
