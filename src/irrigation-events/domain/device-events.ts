@@ -1,8 +1,8 @@
 import { compareAsc } from 'date-fns'
-import { IrrigationEvent } from './irrigation-event'
+import { IrrigationEvent } from '../interfaces/irrigation-event.interface'
 import { DeviceState } from '../enums/device-state.interface'
 
-const sortFn = (a: IrrigationEvent, b: IrrigationEvent) => compareAsc(a.getTimestamp(), b.getTimestamp())
+const sortFn = (a: IrrigationEvent, b: IrrigationEvent) => compareAsc(a.timestamp, b.timestamp)
 
 export class DeviceEvents {
   private deviceId: number

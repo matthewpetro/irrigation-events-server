@@ -17,28 +17,28 @@ function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): Irrigatio
   let i = 0
   while (i < events.length) {
     const [event, nextEvent] = events.slice(i, i + 2)
-    if (event.getState() === DeviceState.ON && nextEvent?.getState() === DeviceState.OFF) {
+    if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.OFF) {
       // Happy path: ON followed by OFF
       viewmodels.push({
         // eslint-disable-next-line no-underscore-dangle
-        startDate: convertTimestampToViewmodel(event.getTimestamp()),
+        startDate: convertTimestampToViewmodel(event.timestamp),
         // eslint-disable-next-line no-underscore-dangle
-        endDate: convertTimestampToViewmodel(nextEvent.getTimestamp()),
-        title: event.getDeviceName(),
-        deviceId: event.getDeviceId(),
+        endDate: convertTimestampToViewmodel(nextEvent.timestamp),
+        title: event.deviceName,
+        deviceId: event.deviceId,
       })
       i += 2
-    } else if (event.getState() === DeviceState.ON && nextEvent?.getState() === DeviceState.ON) {
+    } else if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.ON) {
       // ON followed by ON means an OFF event is missing
       viewmodels.push({
         // eslint-disable-next-line no-underscore-dangle
-        startDate: convertTimestampToViewmodel(event.getTimestamp()),
-        title: event.getDeviceName(),
-        deviceId: event.getDeviceId(),
+        startDate: convertTimestampToViewmodel(event.timestamp),
+        title: event.deviceName,
+        deviceId: event.deviceId,
         warning: Warning.MISSING_OFF,
       })
       i += 1
-    } else if (event.getState() === DeviceState.ON && !nextEvent) {
+    } else if (event.state === DeviceState.ON && !nextEvent) {
       // ON followed by nothing means the device is currently on or
       // the final OFF event is missing. Check the current device
       // states to determine which is the case.
@@ -46,28 +46,28 @@ function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): Irrigatio
         deviceEvents.getCurrentDeviceState() === DeviceState.ON
           ? {
               // eslint-disable-next-line no-underscore-dangle
-              startDate: convertTimestampToViewmodel(event.getTimestamp()),
+              startDate: convertTimestampToViewmodel(event.timestamp),
               endDate: convertTimestampToViewmodel(new Date()),
-              title: event.getDeviceName(),
-              deviceId: event.getDeviceId(),
+              title: event.deviceName,
+              deviceId: event.deviceId,
               currentlyOn: true,
             }
           : {
               // eslint-disable-next-line no-underscore-dangle
-              startDate: convertTimestampToViewmodel(event.getTimestamp()),
-              title: event.getDeviceName(),
-              deviceId: event.getDeviceId(),
+              startDate: convertTimestampToViewmodel(event.timestamp),
+              title: event.deviceName,
+              deviceId: event.deviceId,
               warning: Warning.MISSING_OFF,
             }
       )
       i += 1
-    } else if (event.getState() === DeviceState.OFF) {
+    } else if (event.state === DeviceState.OFF) {
       // OFF means an ON event is missing
       viewmodels.push({
         // eslint-disable-next-line no-underscore-dangle
-        startDate: convertTimestampToViewmodel(event.getTimestamp()),
-        title: event.getDeviceName(),
-        deviceId: event.getDeviceId(),
+        startDate: convertTimestampToViewmodel(event.timestamp),
+        title: event.deviceName,
+        deviceId: event.deviceId,
         warning: Warning.MISSING_ON,
       })
       i += 1

@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe } from '@n
 import { IsISO8601 } from 'class-validator'
 import { isWithinInterval, parseISO } from 'date-fns'
 import { IrrigationEventsService } from './irrigation-events.service'
-import { IrrigationEvent } from './domain/irrigation-event'
+import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
 import { DeviceState } from './enums/device-state.interface'
 import { MakerApiService } from './maker-api.service'
@@ -23,10 +23,10 @@ const createDeviceEvents = (irrigationEvents: IrrigationEvent[]): DeviceEvents[]
   const deviceEvents: DeviceEvents[] = []
   const deviceIds = new Set<number>()
   irrigationEvents.forEach((event) => {
-    deviceIds.add(event.getDeviceId())
+    deviceIds.add(event.deviceId)
   })
   deviceIds.forEach((deviceId) => {
-    const events = irrigationEvents.filter((event) => event.getDeviceId() === deviceId)
+    const events = irrigationEvents.filter((event) => event.deviceId === deviceId)
     deviceEvents.push(new DeviceEvents(deviceId, events))
   })
   return deviceEvents
@@ -66,12 +66,12 @@ export class IrrigationEventsController {
     endTimestamp: string
   ): Promise<void> {
     const appendOnEventPromises = deviceEventLists.map(async (deviceEvents) => {
-      if (deviceEvents.getFirstEvent().getState() !== DeviceState.ON) {
+      if (deviceEvents.getFirstEvent().state !== DeviceState.ON) {
         const eventsBeforeStart = await this.irrigationEventsService.getEventsBeforeStart(
           startTimestamp,
           deviceEvents.getDeviceId()
         )
-        if (eventsBeforeStart[0]?.getState() === DeviceState.ON) {
+        if (eventsBeforeStart[0]?.state === DeviceState.ON) {
           deviceEvents.addEvent(eventsBeforeStart[0])
         }
       }
@@ -79,12 +79,12 @@ export class IrrigationEventsController {
     await Promise.allSettled(appendOnEventPromises)
 
     const appendOffEventPromises = deviceEventLists.map(async (deviceEvents) => {
-      if (deviceEvents.getLastEvent().getState() !== DeviceState.OFF) {
+      if (deviceEvents.getLastEvent().state !== DeviceState.OFF) {
         const eventsAfterEnd = await this.irrigationEventsService.getEventsAfterEnd(
           endTimestamp,
           deviceEvents.getDeviceId()
         )
-        if (eventsAfterEnd[0]?.getState() === DeviceState.OFF) {
+        if (eventsAfterEnd[0]?.state === DeviceState.OFF) {
           deviceEvents.addEvent(eventsAfterEnd[0])
         }
       }

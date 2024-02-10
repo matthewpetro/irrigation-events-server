@@ -3,9 +3,10 @@ import Nano, { DocumentScope } from 'nano'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
 import { IrrigationEventDocument } from './interfaces/irrigation-event-document.interface'
-import { IrrigationEvent } from './domain/irrigation-event'
+import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import * as queryBuilders from './queries'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
+import { parseISO } from 'date-fns'
 
 const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiEventDto) =>
   ({
@@ -14,6 +15,14 @@ const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiE
     state: value,
     deviceId,
   }) as IrrigationEventDocument
+
+const dbDocumentToIrrigationEvent = ({ _id, deviceName, deviceId, state }: IrrigationEventDocument) =>
+  ({
+    timestamp: parseISO(_id),
+    deviceName: deviceName,
+    deviceId: deviceId,
+    state: state,
+  }) as IrrigationEvent
 
 @Injectable()
 export class IrrigationEventsService implements OnModuleInit, OnModuleDestroy {
@@ -62,16 +71,16 @@ export class IrrigationEventsService implements OnModuleInit, OnModuleDestroy {
     const dbDocuments = await this.executeQuery(
       queryBuilders.irrigationEventsQueryBuilder(startTimestamp, endTimestamp)
     )
-    return dbDocuments.map((dbDocument) => new IrrigationEvent(dbDocument))
+    return dbDocuments.map(dbDocumentToIrrigationEvent)
   }
 
   public async getEventsBeforeStart(startTimestamp: string, deviceId: number) {
     const dbDocuments = await this.executeQuery(queryBuilders.eventsBeforeStartQueryBuilder(startTimestamp, deviceId))
-    return dbDocuments.map((dbDocument) => new IrrigationEvent(dbDocument))
+    return dbDocuments.map(dbDocumentToIrrigationEvent)
   }
 
   public async getEventsAfterEnd(endTimestamp: string, deviceId: number) {
     const dbDocuments = await this.executeQuery(queryBuilders.eventsAfterEndQueryBuilder(endTimestamp, deviceId))
-    return dbDocuments.map((dbDocument) => new IrrigationEvent(dbDocument))
+    return dbDocuments.map(dbDocumentToIrrigationEvent)
   }
 }
