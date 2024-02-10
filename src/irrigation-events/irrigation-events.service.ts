@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
 import Nano, { DocumentScope } from 'nano'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
@@ -16,7 +16,7 @@ const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiE
   }) as IrrigationEventDocument
 
 @Injectable()
-export class IrrigationEventsService {
+export class IrrigationEventsService implements OnModuleInit, OnModuleDestroy {
   private db: DocumentScope<IrrigationEventDocument>
   private intervalTimeout: NodeJS.Timeout
 
