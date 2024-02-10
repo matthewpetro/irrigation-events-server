@@ -17,7 +17,6 @@ jest.mock('nano', () => {
           use: jest.fn().mockReturnValue({
             get: mockGet,
             insert: mockInsert,
-            // Add other methods as needed
           }),
         },
       }
@@ -61,9 +60,9 @@ describe('IrrigationEventsService', () => {
     }
     const mockDocument: IrrigationEventDocument = {
       _id: expect.stringMatching(iso8601Regex),
-      deviceName: 'Display Name Field',
-      state: DeviceState.ON,
-      deviceId: 42,
+      deviceName: mockIrrigationEvent.displayName,
+      state: mockIrrigationEvent.value,
+      deviceId: mockIrrigationEvent.deviceId,
     }
     await service.insertIrrigationEvent(mockIrrigationEvent)
     expect(mockInsert).toHaveBeenCalledWith(mockDocument)
