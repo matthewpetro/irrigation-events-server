@@ -56,7 +56,7 @@ export class IrrigationEventsController {
     const deviceEventsList = irrigationEventsToDeviceEvents(irrigationEvents)
     await this.addEventsOutsideTimeRange(deviceEventsList, startTimestamp, endTimestamp)
     if (isCurrentTimeWithinInterval(startTimestamp, endTimestamp)) {
-      this.addCurrentDeviceStates(deviceEventsList)
+      await this.addCurrentDeviceStates(deviceEventsList)
     }
     return this.viewmodelTransformService.transform(deviceEventsList)
   }
