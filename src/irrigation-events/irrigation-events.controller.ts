@@ -19,7 +19,7 @@ class QueryParameters {
 const isCurrentTimeWithinInterval = (startTimestamp: string, endTimestamp: string) =>
   isWithinInterval(Date.now(), { start: parseISO(startTimestamp), end: parseISO(endTimestamp) })
 
-const createDeviceEvents = (irrigationEvents: IrrigationEvent[]): DeviceEvents[] => {
+const irrigationEventsToDeviceEvents = (irrigationEvents: IrrigationEvent[]): DeviceEvents[] => {
   const deviceEvents: DeviceEvents[] = []
   const deviceIds = new Set<number>()
   irrigationEvents.forEach((event) => {
@@ -52,7 +52,7 @@ export class IrrigationEventsController {
   @UsePipes(new ValidationPipe())
   async get(@Query() { startTimestamp, endTimestamp }: QueryParameters) {
     const irrigationEvents = await this.irrigationEventsService.getIrrigationEvents(startTimestamp, endTimestamp)
-    const deviceEventsList = createDeviceEvents(irrigationEvents)
+    const deviceEventsList = irrigationEventsToDeviceEvents(irrigationEvents)
     await this.addEventsOutsideTimeRange(deviceEventsList, startTimestamp, endTimestamp)
     if (isCurrentTimeWithinInterval(startTimestamp, endTimestamp)) {
       this.addCurrentDeviceStates(deviceEventsList)
