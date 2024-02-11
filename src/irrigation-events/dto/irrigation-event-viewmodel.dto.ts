@@ -8,5 +8,4 @@ export interface IrrigationEventViewmodel {
   deviceId: number
   warning?: Warning
   currentlyOn?: boolean
-  allDay?: boolean
 }
