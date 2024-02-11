@@ -5,6 +5,7 @@ WORKDIR /usr/src/app
 RUN npm install -g pnpm
 COPY . .
 RUN pnpm install --frozen-lockfile
+RUN pnpm run test
 RUN pnpm run build
 
 EXPOSE 3000
