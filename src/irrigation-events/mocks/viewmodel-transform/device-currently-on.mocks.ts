@@ -1,6 +1,6 @@
 import { IrrigationEvent } from '../../interfaces/irrigation-event.interface'
 import { DeviceState } from '../../enums/device-state.interface'
-import { DeviceEvents } from '../../domain/device-events'
+import { DeviceEvents } from '../../interfaces/device-events.interface'
 import { IrrigationEventViewmodel } from '../../dto/irrigation-event-viewmodel.dto'
 
 const deviceIrrigationEvents: IrrigationEvent[] = [
@@ -36,8 +36,7 @@ const deviceIrrigationEvents: IrrigationEvent[] = [
   },
 ]
 
-const deviceEvents = new DeviceEvents(1, deviceIrrigationEvents)
-deviceEvents.setCurrentDeviceState(DeviceState.ON)
+const deviceEvents = { deviceId: 1, events: deviceIrrigationEvents, currentDeviceState: DeviceState.ON } as DeviceEvents
 
 const resultViewmodels: IrrigationEventViewmodel[] = [
   {

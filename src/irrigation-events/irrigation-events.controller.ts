@@ -7,7 +7,7 @@ import { MakerApiEventDto } from './dto/maker-api-event.dto'
 import { DeviceState } from './enums/device-state.interface'
 import { MakerApiService } from './maker-api.service'
 import { ViewmodelTransformService } from './viewmodel-transform.service'
-import { DeviceEvents } from './domain/device-events'
+import { DeviceEvents } from './interfaces/device-events.interface'
 
 class QueryParameters {
   @IsISO8601()
@@ -21,13 +21,14 @@ const isCurrentTimeWithinInterval = (startTimestamp: string, endTimestamp: strin
 
 const irrigationEventsToDeviceEvents = (irrigationEvents: IrrigationEvent[]): DeviceEvents[] => {
   const deviceEvents: DeviceEvents[] = []
+  // Use a Set to quickly get a list of unique device IDs
   const deviceIds = new Set<number>()
   irrigationEvents.forEach((event) => {
     deviceIds.add(event.deviceId)
   })
   deviceIds.forEach((deviceId) => {
     const events = irrigationEvents.filter((event) => event.deviceId === deviceId)
-    deviceEvents.push(new DeviceEvents(deviceId, events))
+    deviceEvents.push({ deviceId, events } as DeviceEvents)
   })
   return deviceEvents
 }
@@ -66,26 +67,29 @@ export class IrrigationEventsController {
     endTimestamp: string
   ): Promise<void> {
     const appendOnEventPromises = deviceEventLists.map(async (deviceEvents) => {
-      if (deviceEvents.getFirstEvent().state !== DeviceState.ON) {
+      // If the first event is an OFF event, that probably means the ON event occurred
+      // prior to the beginning of the time range. Check for an ON event before the start
+      // and add it to the list of events if we find one.
+      if (deviceEvents.events[0]?.state === DeviceState.OFF) {
         const eventsBeforeStart = await this.irrigationEventsService.getEventsBeforeStart(
           startTimestamp,
-          deviceEvents.getDeviceId()
+          deviceEvents.deviceId
         )
         if (eventsBeforeStart[0]?.state === DeviceState.ON) {
-          deviceEvents.addEvent(eventsBeforeStart[0])
+          deviceEvents.events.push(eventsBeforeStart[0])
         }
       }
     })
     await Promise.allSettled(appendOnEventPromises)
 
+    // If the last event is an ON event, that probably means the OFF event occurred
+    // after the end of the time range. Check for an OFF event after the end and add
+    // it to the list of events if we find one.
     const appendOffEventPromises = deviceEventLists.map(async (deviceEvents) => {
-      if (deviceEvents.getLastEvent().state !== DeviceState.OFF) {
-        const eventsAfterEnd = await this.irrigationEventsService.getEventsAfterEnd(
-          endTimestamp,
-          deviceEvents.getDeviceId()
-        )
+      if (deviceEvents.events[deviceEvents.events.length - 1].state === DeviceState.ON) {
+        const eventsAfterEnd = await this.irrigationEventsService.getEventsAfterEnd(endTimestamp, deviceEvents.deviceId)
         if (eventsAfterEnd[0]?.state === DeviceState.OFF) {
-          deviceEvents.addEvent(eventsAfterEnd[0])
+          deviceEvents.events.push(eventsAfterEnd[0])
         }
       }
     })
@@ -95,8 +99,7 @@ export class IrrigationEventsController {
   private async addCurrentDeviceStates(deviceEventsList: DeviceEvents[]): Promise<void> {
     const deviceDetails = await this.makerApiService.getAllDeviceDetails()
     deviceEventsList.forEach((deviceEvents) => {
-      const currentDeviceState = deviceDetails[deviceEvents.getDeviceId()]
-      deviceEvents.setCurrentDeviceState(currentDeviceState)
+      deviceEvents.currentDeviceState = deviceDetails[deviceEvents.deviceId]
     })
   }
 }

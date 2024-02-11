@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { roundToNearestMinutes } from 'date-fns'
+import { compareAsc, roundToNearestMinutes } from 'date-fns'
 import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
 import { DeviceState } from './enums/device-state.interface'
 import { Warning } from './enums/warning.interface'
-import { DeviceEvents } from './domain/device-events'
+// import { DeviceEvents } from './domain/device-events'
+import { DeviceEvents } from './interfaces/device-events.interface'
 
 const convertTimestampToViewmodel = (timestamp: Date): string =>
   roundToNearestMinutes(timestamp, {
@@ -11,12 +12,12 @@ const convertTimestampToViewmodel = (timestamp: Date): string =>
     roundingMethod: 'trunc',
   }).toISOString()
 
-function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): IrrigationEventViewmodel[] {
+function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: DeviceEvents): IrrigationEventViewmodel[] {
+  const sortedEvents = [...events].sort((a, b) => compareAsc(a.timestamp, b.timestamp))
   const viewmodels: IrrigationEventViewmodel[] = []
-  const events = deviceEvents.getEvents()
   let i = 0
-  while (i < events.length) {
-    const [event, nextEvent] = events.slice(i, i + 2)
+  while (i < sortedEvents.length) {
+    const [event, nextEvent] = sortedEvents.slice(i, i + 2)
     if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.OFF) {
       // Happy path: ON followed by OFF
       viewmodels.push({
@@ -40,7 +41,7 @@ function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): Irrigatio
       // the final OFF event is missing. Check the current device
       // states to determine which is the case.
       viewmodels.push(
-        deviceEvents.getCurrentDeviceState() === DeviceState.ON
+        currentDeviceState === DeviceState.ON
           ? {
               startDate: convertTimestampToViewmodel(event.timestamp),
               endDate: convertTimestampToViewmodel(new Date()),
