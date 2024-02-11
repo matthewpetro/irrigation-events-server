@@ -20,9 +20,7 @@ function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): Irrigatio
     if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.OFF) {
       // Happy path: ON followed by OFF
       viewmodels.push({
-        // eslint-disable-next-line no-underscore-dangle
         startDate: convertTimestampToViewmodel(event.timestamp),
-        // eslint-disable-next-line no-underscore-dangle
         endDate: convertTimestampToViewmodel(nextEvent.timestamp),
         title: event.deviceName,
         deviceId: event.deviceId,
@@ -31,7 +29,6 @@ function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): Irrigatio
     } else if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.ON) {
       // ON followed by ON means an OFF event is missing
       viewmodels.push({
-        // eslint-disable-next-line no-underscore-dangle
         startDate: convertTimestampToViewmodel(event.timestamp),
         title: event.deviceName,
         deviceId: event.deviceId,
@@ -45,7 +42,6 @@ function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): Irrigatio
       viewmodels.push(
         deviceEvents.getCurrentDeviceState() === DeviceState.ON
           ? {
-              // eslint-disable-next-line no-underscore-dangle
               startDate: convertTimestampToViewmodel(event.timestamp),
               endDate: convertTimestampToViewmodel(new Date()),
               title: event.deviceName,
@@ -53,7 +49,6 @@ function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): Irrigatio
               currentlyOn: true,
             }
           : {
-              // eslint-disable-next-line no-underscore-dangle
               startDate: convertTimestampToViewmodel(event.timestamp),
               title: event.deviceName,
               deviceId: event.deviceId,
@@ -64,7 +59,6 @@ function createViewmodelsFromDeviceEvents(deviceEvents: DeviceEvents): Irrigatio
     } else if (event.state === DeviceState.OFF) {
       // OFF means an ON event is missing
       viewmodels.push({
-        // eslint-disable-next-line no-underscore-dangle
         startDate: convertTimestampToViewmodel(event.timestamp),
         title: event.deviceName,
         deviceId: event.deviceId,
