@@ -3,10 +3,9 @@ import { compareAsc, roundToNearestMinutes } from 'date-fns'
 import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
 import { DeviceState } from './enums/device-state.interface'
 import { Warning } from './enums/warning.interface'
-// import { DeviceEvents } from './domain/device-events'
 import { DeviceEvents } from './interfaces/device-events.interface'
 
-const convertTimestampToViewmodel = (timestamp: Date): string =>
+const convertTimestampToViewmodel = (timestamp: Parameters<typeof roundToNearestMinutes>[0]): string =>
   roundToNearestMinutes(timestamp, {
     nearestTo: 1,
     roundingMethod: 'trunc',
@@ -44,7 +43,7 @@ function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: Device
         currentDeviceState === DeviceState.ON
           ? {
               startDate: convertTimestampToViewmodel(event.timestamp),
-              endDate: convertTimestampToViewmodel(new Date()),
+              endDate: convertTimestampToViewmodel(Date.now()),
               title: event.deviceName,
               deviceId: event.deviceId,
               currentlyOn: true,
