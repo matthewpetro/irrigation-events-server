@@ -48,6 +48,7 @@ describe('IrrigationEventsService', () => {
 
   afterEach(async () => {
     await testingModule.close()
+    jest.clearAllMocks()
   })
 
   it('should be defined', () => {
