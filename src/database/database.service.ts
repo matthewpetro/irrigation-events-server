@@ -1,7 +1,7 @@
 import EnvironmentVariables from '@/environment-variables'
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import Nano, { DocumentScope } from 'nano'
+import Nano, { DocumentScope, MaybeDocument } from 'nano'
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
@@ -34,7 +34,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     clearInterval(this.intervalTimeout)
   }
 
-  public getDatabaseConnection<DocumentType>(databaseName: string) {
-    return <DocumentScope<DocumentType>>this.nano.db.use(databaseName)
+  public getDatabaseConnection<T extends MaybeDocument>(databaseName: string) {
+    return <DocumentScope<T>>this.nano.db.use(databaseName)
   }
 }

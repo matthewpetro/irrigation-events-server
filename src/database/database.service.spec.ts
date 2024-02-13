@@ -45,4 +45,9 @@ describe('DatabaseService', () => {
   it('the auth function should have been called', () => {
     expect(mockAuth).toHaveBeenCalled()
   })
+
+  it('the db.use function should have been called', () => {
+    service.getDatabaseConnection('testDb')
+    expect(mockUse).toHaveBeenCalledWith('testDb')
+  })
 })
