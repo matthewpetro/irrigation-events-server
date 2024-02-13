@@ -27,6 +27,7 @@ jest.mock('nano', () => {
 })
 
 import { IrrigationEventsService } from '@/irrigation-events/irrigation-events.service'
+import { DatabaseModule } from '@/database/database.module'
 
 const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/
 
@@ -36,7 +37,7 @@ describe('IrrigationEventsService', () => {
 
   beforeEach(async () => {
     testingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: '.env.testing' })],
+      imports: [ConfigModule.forRoot({ envFilePath: '.env.testing' }), DatabaseModule],
       providers: [IrrigationEventsService],
     }).compile()
 
