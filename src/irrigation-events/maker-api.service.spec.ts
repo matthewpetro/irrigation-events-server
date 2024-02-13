@@ -15,6 +15,7 @@ describe('MakerApiService', () => {
       providers: [MakerApiService],
     }).compile()
 
+    await module.init()
     service = module.get<MakerApiService>(MakerApiService)
   })
 
