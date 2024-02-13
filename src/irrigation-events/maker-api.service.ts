@@ -1,14 +1,16 @@
 import EnvironmentVariables from '@/environment-variables'
-import { Injectable } from '@nestjs/common'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import axios, { AxiosRequestConfig } from 'axios'
 import { MakerDeviceDetails } from './interfaces/maker-device-details.interface'
 import { DeviceStates } from './interfaces/device-states.interface'
 
 @Injectable()
-export class MakerApiService {
+export class MakerApiService implements OnModuleInit {
   private axiosConfig: AxiosRequestConfig
-  public constructor(private configService: ConfigService<EnvironmentVariables, true>) {
+  public constructor(private configService: ConfigService<EnvironmentVariables, true>) {}
+
+  onModuleInit() {
     this.axiosConfig = {
       baseURL: this.configService.get<string>('MAKER_API_URL', { infer: true }),
       params: {
