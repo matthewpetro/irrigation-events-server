@@ -21,7 +21,7 @@ export class MakerApiService implements OnModuleInit {
 
   public async getAllDeviceDetails() {
     const response = await this.axiosInstance.get<MakerDeviceDetails[]>('/all')
-    const data = response?.data ?? []
+    const data = response.data ?? []
     return Object.fromEntries(data.map((device) => [parseInt(device.id, 10), device.attributes.switch])) as DeviceStates
   }
 }
