@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { SunriseSunsetService } from './sunrise-sunset.service'
 import { ConfigModule } from '@nestjs/config'
+import axios, { AxiosRequestConfig } from 'axios'
 import { DatabaseModule } from '@/database/database.module'
-import axios from 'axios'
+import { SunriseSunsetDocument } from './interfaces/sunrise-sunset-document.interface'
+import { SunriseSunsets } from './interfaces/sunrise-sunset.interface'
 
 // Mock the Nano library
 const mockInsert = jest.fn()
@@ -52,5 +54,110 @@ describe('SunriseSunsetService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined()
+  })
+
+  it('should get all sunrise/sunset data from the database', async () => {
+    const mockDbDocs: SunriseSunsetDocument[] = [
+      { _id: '2024-01-01', sunrise: '2024-01-01T07:00:00-07:00', sunset: '2024-01-01T19:00:00-07:00' },
+      { _id: '2024-01-02', sunrise: '2024-01-02T07:01:00-07:00', sunset: '2024-01-02T19:00:01-07:00' },
+      { _id: '2024-01-03', sunrise: '2024-01-03T07:02:00-07:00', sunset: '2024-01-03T19:00:02-07:00' },
+    ]
+    const mockResponse: SunriseSunsets = {
+      '2024-01-01': { sunrise: '2024-01-01T07:00:00-07:00', sunset: '2024-01-01T19:00:00-07:00' },
+      '2024-01-02': { sunrise: '2024-01-02T07:01:00-07:00', sunset: '2024-01-02T19:00:01-07:00' },
+      '2024-01-03': { sunrise: '2024-01-03T07:02:00-07:00', sunset: '2024-01-03T19:00:02-07:00' },
+    }
+    const mockStartDate = '2024-01-01'
+    const mockEndDate = '2024-01-03'
+    mockFind.mockResolvedValue({ docs: mockDbDocs })
+    const result = await service.getSunriseSunsets(mockStartDate, mockEndDate)
+    expect(mockFind).toHaveBeenCalledWith({
+      selector: {
+        $and: [
+          {
+            _id: {
+              $gte: mockStartDate,
+            },
+          },
+          {
+            _id: {
+              $lte: mockEndDate,
+            },
+          },
+        ],
+      },
+      sort: [{ _id: 'asc' }],
+      limit: 10000,
+    })
+    expect(mockGet).not.toHaveBeenCalled()
+    expect(result).toEqual(mockResponse)
+  })
+
+  it('should get sunrise/sunset data from the API and database', async () => {
+    const mockDbDocs: SunriseSunsetDocument[] = [
+      { _id: '2024-01-01', sunrise: '2024-01-01T07:00:00-07:00', sunset: '2024-01-01T19:00:00-07:00' },
+    ]
+    mockGet.mockImplementation((url: string, config: AxiosRequestConfig) => {
+      if (config.params.date === '2024-01-02') {
+        return Promise.resolve({
+          data: {
+            results: {
+              sunrise: '2024-01-02T07:01:00-07:00',
+              sunset: '2024-01-02T19:01:00-07:00',
+            },
+          },
+        })
+      }
+      if (config.params.date === '2024-01-03') {
+        return Promise.resolve({
+          data: {
+            results: {
+              sunrise: '2024-01-03T07:02:00-07:00',
+              sunset: '2024-01-03T19:02:00-07:00',
+            },
+          },
+        })
+      }
+    })
+    const mockResponse: SunriseSunsets = {
+      '2024-01-01': { sunrise: '2024-01-01T07:00:00-07:00', sunset: '2024-01-01T19:00:00-07:00' },
+      '2024-01-02': { sunrise: '2024-01-02T07:01:00-07:00', sunset: '2024-01-02T19:01:00-07:00' },
+      '2024-01-03': { sunrise: '2024-01-03T07:02:00-07:00', sunset: '2024-01-03T19:02:00-07:00' },
+    }
+    const mockStartDate = '2024-01-01'
+    const mockEndDate = '2024-01-03'
+    mockFind.mockResolvedValue({ docs: mockDbDocs })
+    const result = await service.getSunriseSunsets(mockStartDate, mockEndDate)
+    expect(mockFind).toHaveBeenCalledWith({
+      selector: {
+        $and: [
+          {
+            _id: {
+              $gte: mockStartDate,
+            },
+          },
+          {
+            _id: {
+              $lte: mockEndDate,
+            },
+          },
+        ],
+      },
+      sort: [{ _id: 'asc' }],
+      limit: 10000,
+    })
+    expect(mockInsert).toHaveBeenCalledWith({
+      _id: '2024-01-02',
+      sunrise: '2024-01-02T07:01:00-07:00',
+      sunset: '2024-01-02T19:01:00-07:00',
+    } as SunriseSunsetDocument)
+    expect(mockInsert).toHaveBeenCalledWith({
+      _id: '2024-01-03',
+      sunrise: '2024-01-03T07:02:00-07:00',
+      sunset: '2024-01-03T19:02:00-07:00',
+    } as SunriseSunsetDocument)
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-02' } })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-03' } })
+    expect(result).toEqual(mockResponse)
   })
 })
