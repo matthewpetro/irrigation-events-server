@@ -1,7 +1,6 @@
-import { MaybeDocument } from 'nano'
+import { IdentifiedDocument } from 'nano'
 
-export interface SunriseSunsetDocument extends MaybeDocument {
-  _id: string
+export interface SunriseSunsetDocument extends IdentifiedDocument {
   sunrise: string
   sunset: string
 }
