@@ -4,7 +4,7 @@ import { AppService } from '@/app.service'
 import { ConfigModule } from '@nestjs/config'
 import { IrrigationEventsModule } from './irrigation-events/irrigation-events.module'
 import { DevtoolsModule } from '@nestjs/devtools-integration'
-import { SunriseSunsetModule } from './sunrise-sunset/sunrise-sunset.module';
+import { SunriseSunsetModule } from './sunrise-sunset/sunrise-sunset.module'
 
 @Module({
   imports: [
