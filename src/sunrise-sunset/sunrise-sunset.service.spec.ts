@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { SunriseSunsetService } from './sunrise-sunset.service'
 import { ConfigModule } from '@nestjs/config'
 import axios, { AxiosRequestConfig } from 'axios'
+import { format, parseISO } from 'date-fns'
 import { DatabaseModule } from '@/database/database.module'
 import { SunriseSunsetDocument } from './interfaces/sunrise-sunset-document.interface'
 import { SunriseSunsets } from './interfaces/sunrise-sunset.interface'
@@ -67,8 +68,8 @@ describe('SunriseSunsetService', () => {
       '2024-01-02': { sunrise: '2024-01-02T07:01:00-07:00', sunset: '2024-01-02T19:00:01-07:00' },
       '2024-01-03': { sunrise: '2024-01-03T07:02:00-07:00', sunset: '2024-01-03T19:00:02-07:00' },
     }
-    const mockStartDate = '2024-01-01'
-    const mockEndDate = '2024-01-03'
+    const mockStartDate = parseISO('2024-01-01')
+    const mockEndDate = parseISO('2024-01-03')
     mockFind.mockResolvedValue({ docs: mockDbDocs })
     const result = await service.getSunriseSunsets(mockStartDate, mockEndDate)
     expect(mockFind).toHaveBeenCalledWith({
@@ -76,12 +77,12 @@ describe('SunriseSunsetService', () => {
         $and: [
           {
             _id: {
-              $gte: mockStartDate,
+              $gte: format(mockStartDate, 'yyyy-MM-dd'),
             },
           },
           {
             _id: {
-              $lte: mockEndDate,
+              $lte: format(mockEndDate, 'yyyy-MM-dd'),
             },
           },
         ],
@@ -124,8 +125,8 @@ describe('SunriseSunsetService', () => {
       '2024-01-02': { sunrise: '2024-01-02T07:01:00-07:00', sunset: '2024-01-02T19:01:00-07:00' },
       '2024-01-03': { sunrise: '2024-01-03T07:02:00-07:00', sunset: '2024-01-03T19:02:00-07:00' },
     }
-    const mockStartDate = '2024-01-01'
-    const mockEndDate = '2024-01-03'
+    const mockStartDate = parseISO('2024-01-01')
+    const mockEndDate = parseISO('2024-01-03')
     mockFind.mockResolvedValue({ docs: mockDbDocs })
     const result = await service.getSunriseSunsets(mockStartDate, mockEndDate)
     expect(mockFind).toHaveBeenCalledWith({
@@ -133,12 +134,12 @@ describe('SunriseSunsetService', () => {
         $and: [
           {
             _id: {
-              $gte: mockStartDate,
+              $gte: format(mockStartDate, 'yyyy-MM-dd'),
             },
           },
           {
             _id: {
-              $lte: mockEndDate,
+              $lte: format(mockEndDate, 'yyyy-MM-dd'),
             },
           },
         ],
