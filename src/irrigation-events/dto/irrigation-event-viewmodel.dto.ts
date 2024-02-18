@@ -1,7 +1,7 @@
 import { Warning } from '../enums/warning.interface'
 
 // Conforms to AppointmentModel from @devexpress/dx-react-scheduler
-export interface IrrigationEventViewmodel {
+export class IrrigationEventViewmodel {
   startDate?: string
   endDate?: string
   title: string
