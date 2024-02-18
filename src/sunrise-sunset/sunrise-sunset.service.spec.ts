@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config'
 import axios, { AxiosRequestConfig } from 'axios'
 import { format, parseISO } from 'date-fns'
 import { DatabaseModule } from '@/database/database.module'
-import { SunriseSunsetDocument } from './interfaces/sunrise-sunset-document.interface'
+import { SunriseSunsetDocument } from './entities/sunrise-sunset.entity'
 import { SunriseSunsets } from './interfaces/sunrise-sunset.interface'
 
 // Mock the Nano library
