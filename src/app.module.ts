@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config'
 import { IrrigationEventsModule } from './irrigation-events/irrigation-events.module'
 import { DevtoolsModule } from '@nestjs/devtools-integration'
 import { SunriseSunsetModule } from './sunrise-sunset/sunrise-sunset.module'
+import { WateringProgramsModule } from './watering-programs/watering-programs.module'
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { SunriseSunsetModule } from './sunrise-sunset/sunrise-sunset.module'
     ConfigModule.forRoot({ envFilePath: '.env.local' }),
     IrrigationEventsModule,
     SunriseSunsetModule,
+    WateringProgramsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
