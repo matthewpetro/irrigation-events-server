@@ -18,17 +18,20 @@ export class WateringProgramsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.wateringProgramsService.findOne(id)
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateWateringProgramDto: UpdateWateringProgramDto) {
+  async update(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() updateWateringProgramDto: UpdateWateringProgramDto
+  ) {
     return this.wateringProgramsService.update(id, updateWateringProgramDto)
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.wateringProgramsService.remove(id)
   }
 }
