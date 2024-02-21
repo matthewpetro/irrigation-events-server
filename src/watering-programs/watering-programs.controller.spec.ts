@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { WateringProgramsController } from './watering-programs.controller'
 import { WateringProgramsService } from './watering-programs.service'
 import { CreateWateringProgramDto } from './dto/create-watering-program.dto'
+import { WateringProgramDto } from './dto/watering-program.dto'
 
 const mockWateringProgramsService = {
   create: jest.fn(),
@@ -11,6 +12,19 @@ const mockWateringProgramsService = {
   update: jest.fn(),
   remove: jest.fn(),
 }
+
+const mockCreateDto = {
+  duration: 10,
+  wateringPeriod: 2,
+  startTime: '12:00:00',
+  switches: [1, 2],
+  simultaneousWatering: true,
+} as CreateWateringProgramDto
+
+const mockDto = {
+  id: uuidv4(),
+  ...mockCreateDto,
+} as WateringProgramDto
 
 describe('WateringProgramsController', () => {
   let controller: WateringProgramsController
@@ -38,81 +52,41 @@ describe('WateringProgramsController', () => {
   })
 
   it('should call create', async () => {
-    const dto = {
-      duration: 10,
-      wateringPeriod: 2,
-      startTime: '12:00:00Z',
-      switches: [1, 2],
-      simultaneousWatering: true,
-    } as CreateWateringProgramDto
-    mockWateringProgramsService.create.mockResolvedValue({ id: uuidv4(), ...dto })
-    const result = await controller.create(dto)
-    expect(mockWateringProgramsService.create).toHaveBeenCalledWith(dto)
+    mockWateringProgramsService.create.mockResolvedValue({ id: uuidv4(), ...mockCreateDto })
+    const result = await controller.create(mockCreateDto)
+    expect(mockWateringProgramsService.create).toHaveBeenCalledWith(mockCreateDto)
     expect(result).toEqual({
       id: expect.stringMatching(/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i),
-      ...dto,
+      ...mockCreateDto,
     })
   })
 
   it('should call findAll', async () => {
-    const mockData = [
-      {
-        id: uuidv4(),
-        duration: 10,
-        wateringPeriod: 2,
-        startTime: '12:00:00Z',
-        switches: [1, 2],
-        simultaneousWatering: true,
-      },
-    ]
-    mockWateringProgramsService.findAll.mockResolvedValue(mockData)
+    mockWateringProgramsService.findAll.mockResolvedValue([mockDto])
     const result = await controller.findAll()
     expect(mockWateringProgramsService.findAll).toHaveBeenCalled()
-    expect(result).toEqual(mockData)
+    expect(result).toEqual([mockDto])
   })
 
   it('should call findOne', async () => {
-    const mockData = {
-      id: uuidv4(),
-      duration: 10,
-      wateringPeriod: 2,
-      startTime: '12:00:00Z',
-      switches: [1, 2],
-      simultaneousWatering: true,
-    }
-    mockWateringProgramsService.findOne.mockResolvedValue(mockData)
-    const result = await controller.findOne(mockData.id)
-    expect(mockWateringProgramsService.findOne).toHaveBeenCalledWith(mockData.id)
-    expect(result).toEqual(mockData)
+    mockWateringProgramsService.findOne.mockResolvedValue(mockDto)
+    const result = await controller.findOne(mockDto.id)
+    expect(mockWateringProgramsService.findOne).toHaveBeenCalledWith(mockDto.id)
+    expect(result).toEqual(mockDto)
   })
 
   it('should call update', async () => {
-    const id = uuidv4()
-    const dto = {
-      duration: 10,
-      wateringPeriod: 2,
-      startTime: '12:00:00Z',
-      switches: [1, 2],
-      simultaneousWatering: true,
-    }
-    mockWateringProgramsService.update.mockResolvedValue({ id, ...dto })
-    const result = await controller.update(id, dto)
-    expect(mockWateringProgramsService.update).toHaveBeenCalledWith(id, dto)
-    expect(result).toEqual({ id, ...dto })
+    const dto = { duration: 20 }
+    mockWateringProgramsService.update.mockResolvedValue({ ...mockDto, ...dto })
+    const result = await controller.update(mockDto.id, dto)
+    expect(mockWateringProgramsService.update).toHaveBeenCalledWith(mockDto.id, dto)
+    expect(result).toEqual({ ...mockDto, ...dto })
   })
 
   it('should call remove', async () => {
-    const mockData = {
-      id: uuidv4(),
-      duration: 10,
-      wateringPeriod: 2,
-      startTime: '12:00:00Z',
-      switches: [1, 2],
-      simultaneousWatering: true,
-    }
-    mockWateringProgramsService.remove.mockResolvedValue(mockData)
-    const result = await controller.remove(mockData.id)
-    expect(mockWateringProgramsService.remove).toHaveBeenCalledWith(mockData.id)
-    expect(result).toEqual(mockData)
+    mockWateringProgramsService.remove.mockResolvedValue(mockDto)
+    const result = await controller.remove(mockDto.id)
+    expect(mockWateringProgramsService.remove).toHaveBeenCalledWith(mockDto.id)
+    expect(result).toEqual(mockDto)
   })
 })
