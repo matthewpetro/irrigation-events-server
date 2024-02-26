@@ -41,20 +41,20 @@ const deviceEvents = { deviceId: 1, events: deviceIrrigationEvents } as DeviceEv
 
 const resultViewmodels: IrrigationEventViewmodel[] = [
   {
-    startDate: '2024-01-01T12:00:00.000Z',
+    startTimestamp: '2024-01-01T12:00:00.000Z',
     title: 'Device 1',
     deviceId: 1,
     warning: Warning.MISSING_OFF,
   },
   {
-    startDate: '2024-01-02T12:00:00.000Z',
-    endDate: '2024-01-02T12:30:00.000Z',
+    startTimestamp: '2024-01-02T12:00:00.000Z',
+    endTimestamp: '2024-01-02T12:30:00.000Z',
     title: 'Device 1',
     deviceId: 1,
   },
   {
-    startDate: '2024-01-03T14:00:00.000Z',
-    endDate: '2024-01-03T15:00:00.000Z',
+    startTimestamp: '2024-01-03T14:00:00.000Z',
+    endTimestamp: '2024-01-03T15:00:00.000Z',
     title: 'Device 1',
     deviceId: 1,
   },

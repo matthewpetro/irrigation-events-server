@@ -40,20 +40,20 @@ const deviceEvents = { deviceId: 1, events: deviceIrrigationEvents, currentDevic
 
 const resultViewmodels: IrrigationEventViewmodel[] = [
   {
-    startDate: '2024-01-01T12:00:00.000Z',
-    endDate: '2024-01-01T13:00:00.000Z',
+    startTimestamp: '2024-01-01T12:00:00.000Z',
+    endTimestamp: '2024-01-01T13:00:00.000Z',
     title: 'Device 1',
     deviceId: 1,
   },
   {
-    startDate: '2024-01-02T12:00:00.000Z',
-    endDate: '2024-01-02T12:30:00.000Z',
+    startTimestamp: '2024-01-02T12:00:00.000Z',
+    endTimestamp: '2024-01-02T12:30:00.000Z',
     title: 'Device 1',
     deviceId: 1,
   },
   {
-    startDate: '2024-01-03T14:00:00.000Z',
-    endDate: expect.stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
+    startTimestamp: '2024-01-03T14:00:00.000Z',
+    endTimestamp: expect.stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
     title: 'Device 1',
     deviceId: 1,
     currentlyOn: true,

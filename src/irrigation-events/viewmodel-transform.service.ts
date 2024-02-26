@@ -20,8 +20,8 @@ function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: Device
     if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.OFF) {
       // Happy path: ON followed by OFF
       viewmodels.push({
-        startDate: convertTimestampToViewmodel(event.timestamp),
-        endDate: convertTimestampToViewmodel(nextEvent.timestamp),
+        startTimestamp: convertTimestampToViewmodel(event.timestamp),
+        endTimestamp: convertTimestampToViewmodel(nextEvent.timestamp),
         title: event.deviceName,
         deviceId: event.deviceId,
       })
@@ -29,7 +29,7 @@ function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: Device
     } else if (event.state === DeviceState.ON && nextEvent?.state === DeviceState.ON) {
       // ON followed by ON means an OFF event is missing
       viewmodels.push({
-        startDate: convertTimestampToViewmodel(event.timestamp),
+        startTimestamp: convertTimestampToViewmodel(event.timestamp),
         title: event.deviceName,
         deviceId: event.deviceId,
         warning: Warning.MISSING_OFF,
@@ -42,14 +42,14 @@ function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: Device
       viewmodels.push(
         currentDeviceState === DeviceState.ON
           ? {
-              startDate: convertTimestampToViewmodel(event.timestamp),
-              endDate: convertTimestampToViewmodel(Date.now()),
+              startTimestamp: convertTimestampToViewmodel(event.timestamp),
+              endTimestamp: convertTimestampToViewmodel(Date.now()),
               title: event.deviceName,
               deviceId: event.deviceId,
               currentlyOn: true,
             }
           : {
-              startDate: convertTimestampToViewmodel(event.timestamp),
+              startTimestamp: convertTimestampToViewmodel(event.timestamp),
               title: event.deviceName,
               deviceId: event.deviceId,
               warning: Warning.MISSING_OFF,
@@ -59,7 +59,7 @@ function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: Device
     } else if (event.state === DeviceState.OFF) {
       // OFF means an ON event is missing
       viewmodels.push({
-        startDate: convertTimestampToViewmodel(event.timestamp),
+        startTimestamp: convertTimestampToViewmodel(event.timestamp),
         title: event.deviceName,
         deviceId: event.deviceId,
         warning: Warning.MISSING_ON,
