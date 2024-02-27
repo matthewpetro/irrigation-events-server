@@ -25,7 +25,18 @@ export class IrrigationProgramsService implements OnModuleInit {
   }
 
   async create(createIrrigationProgramDto: CreateIrrigationProgramDto) {
-    return { id: uuidv4(), ...createIrrigationProgramDto } as IrrigationProgramDto
+    const uuid = uuidv4()
+    const irrigationProgram = new IrrigationProgram(
+      uuid,
+      createIrrigationProgramDto.duration,
+      createIrrigationProgramDto.wateringPeriod,
+      createIrrigationProgramDto.startTime,
+      createIrrigationProgramDto.switches,
+      createIrrigationProgramDto.simultaneousIrrigation,
+      createIrrigationProgramDto.nextRunDate
+    )
+    await this.db.insert(irrigationProgram)
+    return { id: uuid, ...createIrrigationProgramDto } as IrrigationProgramDto
   }
 
   async findAll() {
