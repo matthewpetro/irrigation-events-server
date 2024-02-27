@@ -3,6 +3,4 @@ export interface SunriseSunset {
   sunset: string
 }
 
-export interface SunriseSunsets {
-  [date: string]: SunriseSunset
-}
+export type SunriseSunsets = Map<string, SunriseSunset>
