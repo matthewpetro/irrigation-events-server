@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { IrrigationProgramsService } from './watering-programs.service'
+import { IrrigationProgramsService } from './irrigation-programs.service'
 import { DatabaseModule } from '@/database/database.module'
 import { ConfigModule } from '@nestjs/config'
 

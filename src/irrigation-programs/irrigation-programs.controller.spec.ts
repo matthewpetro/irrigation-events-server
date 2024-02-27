@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { v4 as uuidv4 } from 'uuid'
-import { IrrigationProgramsController } from './watering-programs.controller'
-import { IrrigationProgramsService } from './watering-programs.service'
-import { CreateIrrigationProgramDto } from './dto/create-watering-program.dto'
-import { IrrigationProgramDto } from './dto/watering-program.dto'
+import { IrrigationProgramsController } from './irrigation-programs.controller'
+import { IrrigationProgramsService } from './irrigation-programs.service'
+import { CreateIrrigationProgramDto } from './dto/create-irrigation-program.dto'
+import { IrrigationProgramDto } from './dto/irrigation-program.dto'
 
 const mockIrrigationProgramsService = {
   create: jest.fn(),

@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common'
-import { IrrigationProgramsService } from './watering-programs.service'
-import { CreateIrrigationProgramDto } from './dto/create-watering-program.dto'
-import { UpdateIrrigationProgramDto } from './dto/update-watering-program.dto'
+import { IrrigationProgramsService } from './irrigation-programs.service'
+import { CreateIrrigationProgramDto } from './dto/create-irrigation-program.dto'
+import { UpdateIrrigationProgramDto } from './dto/update-irrigation-program.dto'
 
 @Controller('irrigation-programs')
 export class IrrigationProgramsController {
