@@ -1,37 +1,37 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common'
-import { WateringProgramsService } from './watering-programs.service'
-import { CreateWateringProgramDto } from './dto/create-watering-program.dto'
-import { UpdateWateringProgramDto } from './dto/update-watering-program.dto'
+import { IrrigationProgramsService } from './watering-programs.service'
+import { CreateIrrigationProgramDto } from './dto/create-watering-program.dto'
+import { UpdateIrrigationProgramDto } from './dto/update-watering-program.dto'
 
-@Controller('watering-programs')
-export class WateringProgramsController {
-  constructor(private readonly wateringProgramsService: WateringProgramsService) {}
+@Controller('irrigation-programs')
+export class IrrigationProgramsController {
+  constructor(private readonly irrigationProgramsService: IrrigationProgramsService) {}
 
   @Post()
-  async create(@Body() createWateringProgramDto: CreateWateringProgramDto) {
-    return this.wateringProgramsService.create(createWateringProgramDto)
+  async create(@Body() createIrrigationProgramDto: CreateIrrigationProgramDto) {
+    return this.irrigationProgramsService.create(createIrrigationProgramDto)
   }
 
   @Get()
   async findAll() {
-    return this.wateringProgramsService.findAll()
+    return this.irrigationProgramsService.findAll()
   }
 
   @Get(':id')
   async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.wateringProgramsService.findOne(id)
+    return this.irrigationProgramsService.findOne(id)
   }
 
   @Patch(':id')
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() updateWateringProgramDto: UpdateWateringProgramDto
+    @Body() updateIrrigationProgramDto: UpdateIrrigationProgramDto
   ) {
-    return this.wateringProgramsService.update(id, updateWateringProgramDto)
+    return this.irrigationProgramsService.update(id, updateIrrigationProgramDto)
   }
 
   @Delete(':id')
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.wateringProgramsService.remove(id)
+    return this.irrigationProgramsService.remove(id)
   }
 }

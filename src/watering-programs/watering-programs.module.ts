@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common'
-import { WateringProgramsService } from './watering-programs.service'
-import { WateringProgramsController } from './watering-programs.controller'
+import { ConfigModule } from '@nestjs/config'
+import { IrrigationProgramsService } from './watering-programs.service'
+import { IrrigationProgramsController } from './watering-programs.controller'
+import { DatabaseModule } from '@/database/database.module'
 
 @Module({
-  controllers: [WateringProgramsController],
-  providers: [WateringProgramsService],
+  imports: [ConfigModule, DatabaseModule],
+  controllers: [IrrigationProgramsController],
+  providers: [IrrigationProgramsService],
 })
-export class WateringProgramsModule {}
+export class IrrigationProgramsModule {}

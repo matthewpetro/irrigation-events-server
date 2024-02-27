@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { v4 as uuidv4 } from 'uuid'
-import { WateringProgramsController } from './watering-programs.controller'
-import { WateringProgramsService } from './watering-programs.service'
-import { CreateWateringProgramDto } from './dto/create-watering-program.dto'
-import { WateringProgramDto } from './dto/watering-program.dto'
+import { IrrigationProgramsController } from './watering-programs.controller'
+import { IrrigationProgramsService } from './watering-programs.service'
+import { CreateIrrigationProgramDto } from './dto/create-watering-program.dto'
+import { IrrigationProgramDto } from './dto/watering-program.dto'
 
-const mockWateringProgramsService = {
+const mockIrrigationProgramsService = {
   create: jest.fn(),
   findAll: jest.fn(),
   findOne: jest.fn(),
@@ -18,29 +18,29 @@ const mockCreateDto = {
   wateringPeriod: 2,
   startTime: '12:00:00',
   switches: [1, 2],
-  simultaneousWatering: true,
-} as CreateWateringProgramDto
+  simultaneousIrrigation: true,
+} as CreateIrrigationProgramDto
 
 const mockDto = {
   id: uuidv4(),
   ...mockCreateDto,
-} as WateringProgramDto
+} as IrrigationProgramDto
 
-describe('WateringProgramsController', () => {
-  let controller: WateringProgramsController
+describe('IrrigationProgramsController', () => {
+  let controller: IrrigationProgramsController
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [WateringProgramsController],
+      controllers: [IrrigationProgramsController],
     })
       .useMocker((token) => {
-        if (token === WateringProgramsService) {
-          return mockWateringProgramsService
+        if (token === IrrigationProgramsService) {
+          return mockIrrigationProgramsService
         }
       })
       .compile()
 
-    controller = module.get<WateringProgramsController>(WateringProgramsController)
+    controller = module.get<IrrigationProgramsController>(IrrigationProgramsController)
   })
 
   afterEach(() => {
@@ -52,9 +52,9 @@ describe('WateringProgramsController', () => {
   })
 
   it('should call create', async () => {
-    mockWateringProgramsService.create.mockResolvedValue({ id: uuidv4(), ...mockCreateDto })
+    mockIrrigationProgramsService.create.mockResolvedValue({ id: uuidv4(), ...mockCreateDto })
     const result = await controller.create(mockCreateDto)
-    expect(mockWateringProgramsService.create).toHaveBeenCalledWith(mockCreateDto)
+    expect(mockIrrigationProgramsService.create).toHaveBeenCalledWith(mockCreateDto)
     expect(result).toEqual({
       id: expect.stringMatching(/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i),
       ...mockCreateDto,
@@ -62,31 +62,31 @@ describe('WateringProgramsController', () => {
   })
 
   it('should call findAll', async () => {
-    mockWateringProgramsService.findAll.mockResolvedValue([mockDto])
+    mockIrrigationProgramsService.findAll.mockResolvedValue([mockDto])
     const result = await controller.findAll()
-    expect(mockWateringProgramsService.findAll).toHaveBeenCalled()
+    expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
     expect(result).toEqual([mockDto])
   })
 
   it('should call findOne', async () => {
-    mockWateringProgramsService.findOne.mockResolvedValue(mockDto)
+    mockIrrigationProgramsService.findOne.mockResolvedValue(mockDto)
     const result = await controller.findOne(mockDto.id)
-    expect(mockWateringProgramsService.findOne).toHaveBeenCalledWith(mockDto.id)
+    expect(mockIrrigationProgramsService.findOne).toHaveBeenCalledWith(mockDto.id)
     expect(result).toEqual(mockDto)
   })
 
   it('should call update', async () => {
     const dto = { duration: 20 }
-    mockWateringProgramsService.update.mockResolvedValue({ ...mockDto, ...dto })
+    mockIrrigationProgramsService.update.mockResolvedValue({ ...mockDto, ...dto })
     const result = await controller.update(mockDto.id, dto)
-    expect(mockWateringProgramsService.update).toHaveBeenCalledWith(mockDto.id, dto)
+    expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(mockDto.id, dto)
     expect(result).toEqual({ ...mockDto, ...dto })
   })
 
   it('should call remove', async () => {
-    mockWateringProgramsService.remove.mockResolvedValue(mockDto)
+    mockIrrigationProgramsService.remove.mockResolvedValue(mockDto)
     const result = await controller.remove(mockDto.id)
-    expect(mockWateringProgramsService.remove).toHaveBeenCalledWith(mockDto.id)
+    expect(mockIrrigationProgramsService.remove).toHaveBeenCalledWith(mockDto.id)
     expect(result).toEqual(mockDto)
   })
 })

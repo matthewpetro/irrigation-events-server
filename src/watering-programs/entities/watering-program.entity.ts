@@ -1,1 +1,1 @@
-export class WateringProgram {}
+export class IrrigationProgram {}
