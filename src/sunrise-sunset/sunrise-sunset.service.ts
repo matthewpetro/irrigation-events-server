@@ -4,7 +4,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DocumentScope } from 'nano'
 import axios, { AxiosInstance } from 'axios'
-import { SunriseSunsetDocument } from './entities/sunrise-sunset.entity'
+import { SunriseSunsetEntity } from './entities/sunrise-sunset.entity'
 import { SunriseSunsetResponse } from './interfaces/sunrise-sunset-response.interface'
 import { sunriseSunsetQueryBuilder } from './queries'
 import { addDays, format } from 'date-fns'
@@ -21,10 +21,10 @@ const sunriseSunsetToDbDocument = ({ results }: SunriseSunsetResponse) => {
     _id: sunrise.slice(0, 10),
     sunrise,
     sunset,
-  } as SunriseSunsetDocument
+  } as SunriseSunsetEntity
 }
 
-const dbDocumentsToSunriseSunsets = (documents: SunriseSunsetDocument[]) =>
+const dbDocumentsToSunriseSunsets = (documents: SunriseSunsetEntity[]) =>
   documents.reduce((accumulator, document) => {
     accumulator.set(document._id, {
       sunrise: document.sunrise,
@@ -36,7 +36,7 @@ const dbDocumentsToSunriseSunsets = (documents: SunriseSunsetDocument[]) =>
 @Injectable()
 export class SunriseSunsetService implements OnModuleInit {
   private axiosInstance: AxiosInstance
-  private db: DocumentScope<SunriseSunsetDocument>
+  private db: DocumentScope<SunriseSunsetEntity>
 
   public constructor(
     private configService: ConfigService<EnvironmentVariables, true>,
@@ -54,7 +54,7 @@ export class SunriseSunsetService implements OnModuleInit {
       },
     })
     this.db = this.databaseService.getDatabaseConnection(
-      this.configService.get<SunriseSunsetDocument>('SUNRISE_SUNSET_DB_NAME', { infer: true })
+      this.configService.get<SunriseSunsetEntity>('SUNRISE_SUNSET_DB_NAME', { infer: true })
     )
   }
 
@@ -94,7 +94,7 @@ export class SunriseSunsetService implements OnModuleInit {
     return result.docs
   }
 
-  private async insertSunriseSunset(sunriseSunsetDocument: SunriseSunsetDocument) {
+  private async insertSunriseSunset(sunriseSunsetDocument: SunriseSunsetEntity) {
     await this.db.insert(sunriseSunsetDocument)
   }
 }

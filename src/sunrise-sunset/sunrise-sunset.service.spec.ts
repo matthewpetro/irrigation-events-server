@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config'
 import axios, { AxiosRequestConfig } from 'axios'
 import { format, parseISO } from 'date-fns'
 import { DatabaseModule } from '@/database/database.module'
-import { SunriseSunsetDocument } from './entities/sunrise-sunset.entity'
+import { SunriseSunsetEntity } from './entities/sunrise-sunset.entity'
 import type { SunriseSunsets } from './interfaces/sunrise-sunset.interface'
 
 // Mock the Nano library
@@ -58,7 +58,7 @@ describe('SunriseSunsetService', () => {
   })
 
   it('should get all sunrise/sunset data from the database', async () => {
-    const mockDbDocs: SunriseSunsetDocument[] = [
+    const mockDbDocs: SunriseSunsetEntity[] = [
       { _id: '2024-01-01', sunrise: '2024-01-01T07:00:00-07:00', sunset: '2024-01-01T19:00:00-07:00' },
       { _id: '2024-01-02', sunrise: '2024-01-02T07:01:00-07:00', sunset: '2024-01-02T19:00:01-07:00' },
       { _id: '2024-01-03', sunrise: '2024-01-03T07:02:00-07:00', sunset: '2024-01-03T19:00:02-07:00' },
@@ -95,7 +95,7 @@ describe('SunriseSunsetService', () => {
   })
 
   it('should get sunrise/sunset data from the API and database', async () => {
-    const mockDbDocs: SunriseSunsetDocument[] = [
+    const mockDbDocs: SunriseSunsetEntity[] = [
       { _id: '2024-01-01', sunrise: '2024-01-01T07:00:00-07:00', sunset: '2024-01-01T19:00:00-07:00' },
     ]
     mockGet.mockImplementation((url: string, config: AxiosRequestConfig) => {
@@ -151,12 +151,12 @@ describe('SunriseSunsetService', () => {
       _id: '2024-01-02',
       sunrise: '2024-01-02T07:01:00-07:00',
       sunset: '2024-01-02T19:01:00-07:00',
-    } as SunriseSunsetDocument)
+    } as SunriseSunsetEntity)
     expect(mockInsert).toHaveBeenCalledWith({
       _id: '2024-01-03',
       sunrise: '2024-01-03T07:02:00-07:00',
       sunset: '2024-01-03T19:02:00-07:00',
-    } as SunriseSunsetDocument)
+    } as SunriseSunsetEntity)
     expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-02' } })
     expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-03' } })
     expect(result).toEqual(mockResponse)
