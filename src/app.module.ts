@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config'
 import { IrrigationEventsModule } from './irrigation-events/irrigation-events.module'
 import { DevtoolsModule } from '@nestjs/devtools-integration'
 import { SunriseSunsetModule } from './sunrise-sunset/sunrise-sunset.module'
-import { IrrigationProgramsModule } from './irrigation-programs/watering-programs.module'
+import { IrrigationProgramsModule } from './irrigation-programs/irrigation-programs.module'
 
 @Module({
   imports: [
