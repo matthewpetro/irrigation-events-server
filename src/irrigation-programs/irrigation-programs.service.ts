@@ -1,4 +1,5 @@
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, OnModuleInit } from '@nestjs/common'
+import { v4 as uuidv4 } from 'uuid'
 import { CreateIrrigationProgramDto } from './dto/create-irrigation-program.dto'
 import { UpdateIrrigationProgramDto } from './dto/update-irrigation-program.dto'
 import { IrrigationProgramDto } from './dto/irrigation-program.dto'
@@ -47,36 +48,83 @@ export class IrrigationProgramsService implements OnModuleInit {
   }
 
   async create(createIrrigationProgramDto: CreateIrrigationProgramDto) {
-    const result = await this.db.insert(creationDtoToDocument(createIrrigationProgramDto))
-    return result.ok ? ({ id: result.id, ...createIrrigationProgramDto } as IrrigationProgramDto) : null
+    try {
+      const result = await this.db.insert(creationDtoToDocument(createIrrigationProgramDto), uuidv4())
+      if (!result.ok) {
+        throw new HttpException('Failed to create irrigation program', HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+      return { id: result.id, ...createIrrigationProgramDto } as IrrigationProgramDto
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException('Failed to create irrigation program', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
   async findAll() {
-    const result = await this.db.list({ include_docs: true })
-    return result.rows.map((row) => irrigationDocumentToDto(row.doc!))
+    try {
+      const result = await this.db.list({ include_docs: true })
+      return result.rows.map((row) => irrigationDocumentToDto(row.doc!))
+    } catch (error) {
+      throw new HttpException('Failed to retrieve irrigation programs', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  private async findIrrigationProgramById(id: string) {
+    try {
+      const result = await this.db.get(id)
+      if (result._deleted) {
+        throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
+      }
+      return result
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      if (error.statusCode === 404) {
+        throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
+      }
+      throw new HttpException(`Failed to retrieve irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
   async findOne(id: string) {
-    const result = await this.db.get(id)
-    return result && !result._deleted ? irrigationDocumentToDto(result) : null
+    const result = await this.findIrrigationProgramById(id)
+    return irrigationDocumentToDto(result)
   }
 
   async update(id: string, updateIrrigationProgramDto: UpdateIrrigationProgramDto) {
-    const currentDocument = await this.db.get(id)
-    if (!currentDocument || currentDocument._deleted) {
-      return null
-    }
-    const newDocument: IrrigationProgramDocument = {
+    const currentDocument = await this.findIrrigationProgramById(id)
+    const newDocument = {
       ...currentDocument,
       ...updateIrrigationProgramDto,
     }
-    const result = await this.db.insert(newDocument)
-    return result.ok ? irrigationDocumentToDto(newDocument) : null
+    try {
+      const result = await this.db.insert(newDocument)
+      if (!result.ok) {
+        throw new HttpException(`Failed to update irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+      return irrigationDocumentToDto(newDocument)
+    } catch (error) {
+      if (!(error instanceof HttpException)) {
+        throw new HttpException(`Failed to update irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+      throw error
+    }
   }
 
   async remove(id: string) {
-    const { etag: revision } = await this.db.head(id)
-    const result = await this.db.destroy(id, revision)
-    return result.ok
+    try {
+      const { etag: revision } = await this.db.head(id)
+      const result = await this.db.destroy(id, revision)
+      return result.ok
+    } catch (error) {
+      if (error.statusCode === 404) {
+        throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
+      } else {
+        throw new HttpException(`Failed to delete irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+    }
   }
 }
