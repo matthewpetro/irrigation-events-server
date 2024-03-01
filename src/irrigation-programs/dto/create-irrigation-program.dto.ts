@@ -1,4 +1,4 @@
-import { IsBoolean, IsISO8601, IsInt, IsPositive, Matches } from 'class-validator'
+import { IsBoolean, IsISO8601, IsInt, IsOptional, IsPositive, Matches } from 'class-validator'
 
 export class CreateIrrigationProgramDto {
   @IsInt()
@@ -9,7 +9,7 @@ export class CreateIrrigationProgramDto {
   @IsPositive()
   wateringPeriod: number
 
-  @Matches(/^\d{2}:\d{2}:\d{2}$/)
+  @Matches(/^\d{2}:\d{2}$/)
   startTime: string
 
   @IsInt({ each: true })
@@ -21,5 +21,6 @@ export class CreateIrrigationProgramDto {
 
   @IsISO8601()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  @IsOptional()
   nextRunDate?: string
 }
