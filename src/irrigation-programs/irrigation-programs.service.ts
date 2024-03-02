@@ -117,9 +117,16 @@ export class IrrigationProgramsService implements OnModuleInit {
   async remove(id: string) {
     try {
       const { etag: revision } = await this.db.head(id)
-      const result = await this.db.destroy(id, revision)
-      return result.ok
+      // The revision is wrapped in double quotes, so we need to remove them
+      const trimmedRevision = revision.replace(/^"|"$/g, '')
+      const result = await this.db.destroy(id, trimmedRevision)
+      if (!result.ok) {
+        throw new HttpException(`Failed to delete irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
+      }
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
       if (error.statusCode === 404) {
         throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
       } else {

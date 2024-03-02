@@ -349,10 +349,9 @@ describe('IrrigationProgramsService', () => {
       const rev = '1-234'
       mockHead.mockResolvedValue({ etag: rev })
       mockDestroy.mockResolvedValue({ ok: true, id, rev })
-      const result = await service.remove(id)
+      await service.remove(id)
       expect(mockHead).toHaveBeenCalledWith(id)
       expect(mockDestroy).toHaveBeenCalledWith(id, rev)
-      expect(result).toBeTruthy()
     })
 
     it('should not remove an irrigation program because the revision cannot be found', async () => {
@@ -386,10 +385,13 @@ describe('IrrigationProgramsService', () => {
       const rev = '1-234'
       mockHead.mockResolvedValue({ etag: rev })
       mockDestroy.mockResolvedValue({ ok: false })
-      const result = await service.remove(id)
+      try {
+        await service.remove(id)
+      } catch (error) {
+        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+      }
       expect(mockHead).toHaveBeenCalledWith(id)
       expect(mockDestroy).toHaveBeenCalledWith(id, rev)
-      expect(result).toBeFalsy()
     })
   })
 })

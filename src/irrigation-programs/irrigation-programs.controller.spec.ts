@@ -85,8 +85,7 @@ describe('IrrigationProgramsController', () => {
 
   it('should call remove', async () => {
     mockIrrigationProgramsService.remove.mockResolvedValue(mockDto)
-    const result = await controller.remove(mockDto.id)
+    await controller.remove(mockDto.id)
     expect(mockIrrigationProgramsService.remove).toHaveBeenCalledWith(mockDto.id)
-    expect(result).toEqual(mockDto)
   })
 })

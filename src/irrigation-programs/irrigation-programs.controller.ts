@@ -58,6 +58,6 @@ export class IrrigationProgramsController {
 
   @Delete(':id')
   async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.irrigationProgramsService.remove(id)
+    this.irrigationProgramsService.remove(id)
   }
 }
