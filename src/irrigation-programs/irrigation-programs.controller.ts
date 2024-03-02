@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
-  HttpException,
-  HttpStatus,
   ValidationPipe,
   UsePipes,
 } from '@nestjs/common'
@@ -26,9 +24,6 @@ export class IrrigationProgramsController {
   @Post()
   async create(@Body() createIrrigationProgramDto: CreateIrrigationProgramDto) {
     const result = await this.irrigationProgramsService.create(createIrrigationProgramDto as CreateIrrigationProgram)
-    if (result === null) {
-      throw new HttpException('Failed to create irrigation program', HttpStatus.INTERNAL_SERVER_ERROR)
-    }
     return result as IrrigationProgramDto
   }
 
@@ -41,9 +36,6 @@ export class IrrigationProgramsController {
   @Get(':id')
   async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     const irrigationProgram = await this.irrigationProgramsService.findOne(id)
-    if (irrigationProgram === null) {
-      throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
-    }
     return irrigationProgram as IrrigationProgramDto
   }
 
@@ -56,9 +48,6 @@ export class IrrigationProgramsController {
       id,
       updateIrrigationProgramDto as UpdateIrrigationProgram
     )
-    if (irrigationProgram === null) {
-      throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
-    }
     return irrigationProgram as IrrigationProgramDto
   }
 
