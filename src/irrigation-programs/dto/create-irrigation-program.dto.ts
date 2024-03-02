@@ -9,7 +9,13 @@ export class CreateIrrigationProgramDto {
   @IsPositive()
   wateringPeriod: number
 
-  @Matches(/^\d{2}:\d{2}$/)
+  // Matches a time formatted in HH24:MM or a string containing 'sunset' or 'sunrise' followed by an optional offset
+  // Examples:
+  //   05:30
+  //   22:15
+  //   sunrise+60
+  //   sunset-30
+  @Matches(/^(?:[01]\d|2[0-3]):(?:[0-5]\d)$|^(?:sunset|sunrise)(?:[+-]?\d+)?$/)
   startTime: string
 
   @IsInt({ each: true })
