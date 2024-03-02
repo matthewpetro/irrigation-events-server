@@ -1,19 +1,18 @@
 import { HttpException, HttpStatus, Injectable, OnModuleInit } from '@nestjs/common'
 import { v4 as uuidv4 } from 'uuid'
-import { CreateIrrigationProgramDto } from './dto/create-irrigation-program.dto'
-import { UpdateIrrigationProgramDto } from './dto/update-irrigation-program.dto'
-import { IrrigationProgramDto } from './dto/irrigation-program.dto'
+import type { CreateIrrigationProgram, UpdateIrrigationProgram } from './types'
 import { IrrigationProgramEntity } from './entities/irrigation-program.entity'
+import { IrrigationProgram } from './interfaces/irrigation-program.interface'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
 import { DatabaseService } from '@/database/database.service'
 import { DocumentScope, IdentifiedDocument, MaybeDocument } from 'nano'
 
-type IrrigationProgramDocument = IrrigationProgramEntity & IdentifiedDocument
+type IrrigationProgramEntityWithId = IrrigationProgramEntity & IdentifiedDocument
 
-type IrrigationProgramMaybeDocument = IrrigationProgramEntity & MaybeDocument
-
-const irrigationDocumentToDto = (irrigationProgram: IrrigationProgramDocument): IrrigationProgramDto => ({
+const irrigationEntityToIrrigationInterface = (
+  irrigationProgram: IrrigationProgramEntityWithId
+): IrrigationProgram => ({
   id: irrigationProgram._id,
   duration: irrigationProgram.duration,
   wateringPeriod: irrigationProgram.wateringPeriod,
@@ -23,18 +22,9 @@ const irrigationDocumentToDto = (irrigationProgram: IrrigationProgramDocument): 
   nextRunDate: irrigationProgram.nextRunDate,
 })
 
-const creationDtoToDocument = (irrigationProgramDto: CreateIrrigationProgramDto): IrrigationProgramMaybeDocument => ({
-  duration: irrigationProgramDto.duration,
-  wateringPeriod: irrigationProgramDto.wateringPeriod,
-  startTime: irrigationProgramDto.startTime,
-  switches: irrigationProgramDto.switches,
-  simultaneousIrrigation: irrigationProgramDto.simultaneousIrrigation,
-  nextRunDate: irrigationProgramDto.nextRunDate,
-})
-
 @Injectable()
 export class IrrigationProgramsService implements OnModuleInit {
-  private db: DocumentScope<IrrigationProgramMaybeDocument>
+  private db: DocumentScope<IrrigationProgramEntity & MaybeDocument>
 
   public constructor(
     private configService: ConfigService<EnvironmentVariables, true>,
@@ -47,13 +37,13 @@ export class IrrigationProgramsService implements OnModuleInit {
     )
   }
 
-  async create(createIrrigationProgramDto: CreateIrrigationProgramDto) {
+  async create(createIrrigationProgram: CreateIrrigationProgram) {
     try {
-      const result = await this.db.insert(creationDtoToDocument(createIrrigationProgramDto), uuidv4())
+      const result = await this.db.insert(createIrrigationProgram as IrrigationProgramEntity, uuidv4())
       if (!result.ok) {
         throw new HttpException('Failed to create irrigation program', HttpStatus.INTERNAL_SERVER_ERROR)
       }
-      return { id: result.id, ...createIrrigationProgramDto } as IrrigationProgramDto
+      return { id: result.id, ...createIrrigationProgram } as IrrigationProgram
     } catch (error) {
       if (error instanceof HttpException) {
         throw error
@@ -65,7 +55,7 @@ export class IrrigationProgramsService implements OnModuleInit {
   async findAll() {
     try {
       const result = await this.db.list({ include_docs: true })
-      return result.rows.map((row) => irrigationDocumentToDto(row.doc!))
+      return result.rows.map((row) => irrigationEntityToIrrigationInterface(row.doc! as IrrigationProgramEntityWithId))
     } catch (error) {
       throw new HttpException('Failed to retrieve irrigation programs', HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -77,7 +67,7 @@ export class IrrigationProgramsService implements OnModuleInit {
       if (result._deleted) {
         throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
       }
-      return result
+      return result as IrrigationProgramEntityWithId
     } catch (error) {
       if (error instanceof HttpException) {
         throw error
@@ -91,21 +81,21 @@ export class IrrigationProgramsService implements OnModuleInit {
 
   async findOne(id: string) {
     const result = await this.findIrrigationProgramById(id)
-    return irrigationDocumentToDto(result)
+    return irrigationEntityToIrrigationInterface(result)
   }
 
-  async update(id: string, updateIrrigationProgramDto: UpdateIrrigationProgramDto) {
+  async update(id: string, updateIrrigationProgram: UpdateIrrigationProgram) {
     const currentDocument = await this.findIrrigationProgramById(id)
-    const newDocument = {
+    const newDocument: IrrigationProgramEntityWithId = {
       ...currentDocument,
-      ...updateIrrigationProgramDto,
+      ...updateIrrigationProgram,
     }
     try {
       const result = await this.db.insert(newDocument)
       if (!result.ok) {
         throw new HttpException(`Failed to update irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
       }
-      return irrigationDocumentToDto(newDocument)
+      return irrigationEntityToIrrigationInterface(newDocument)
     } catch (error) {
       if (!(error instanceof HttpException)) {
         throw new HttpException(`Failed to update irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)

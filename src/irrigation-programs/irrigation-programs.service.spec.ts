@@ -3,8 +3,8 @@ import { IrrigationProgramsService } from './irrigation-programs.service'
 import { DatabaseModule } from '@/database/database.module'
 import { ConfigModule } from '@nestjs/config'
 import { v4 as uuidv4 } from 'uuid'
+import { IrrigationProgram } from './interfaces/irrigation-program.interface'
 import { IrrigationProgramEntity } from './entities/irrigation-program.entity'
-import { IrrigationProgramDto } from './dto/irrigation-program.dto'
 import { CreateIrrigationProgramDto } from './dto/create-irrigation-program.dto'
 import { UpdateIrrigationProgramDto } from './dto/update-irrigation-program.dto'
 import { HttpStatus } from '@nestjs/common'
@@ -78,7 +78,7 @@ describe('IrrigationProgramsService', () => {
       expect(irrigationProgram).toEqual({
         id: expect.stringMatching(uuidv4Regex),
         ...mockCreateDto,
-      })
+      } as IrrigationProgram)
     })
 
     it('should not create an irrigation program because the result is not ok', async () => {
@@ -143,7 +143,7 @@ describe('IrrigationProgramsService', () => {
       expect(irrigationPrograms).toEqual([
         { id: uuid1, ...mockIrrigationProgram1 },
         { id: uuid2, ...mockIrrigationProgram2 },
-      ] as IrrigationProgramDto[])
+      ] as IrrigationProgram[])
     })
 
     it('should not find any irrigation programs', async () => {
@@ -180,7 +180,7 @@ describe('IrrigationProgramsService', () => {
       expect(irrigationProgram).toEqual({
         id: id,
         ...mockPartialIrrigationProgram,
-      } as IrrigationProgramDto)
+      } as IrrigationProgram)
     })
 
     it('should not find a deleted irrigation program', async () => {
@@ -241,7 +241,7 @@ describe('IrrigationProgramsService', () => {
         id,
         ...mockIrrigationProgram,
         ...mockUpdateDto,
-      } as IrrigationProgramDto)
+      } as IrrigationProgram)
     })
 
     it('should not update an irrigation program because the program has been deleted', async () => {
