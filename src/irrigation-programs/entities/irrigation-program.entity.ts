@@ -4,7 +4,7 @@ export class IrrigationProgramEntity {
     public readonly duration: number,
     public readonly wateringPeriod: number,
     public readonly startTime: string,
-    public readonly switches: number[],
+    public readonly deviceIds: number[],
     public readonly simultaneousIrrigation: boolean,
     public readonly nextRunDate?: string
   ) {}

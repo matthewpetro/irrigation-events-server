@@ -23,7 +23,7 @@ export class CreateIrrigationProgramDto {
 
   @IsInt({ each: true })
   @IsPositive({ each: true })
-  switches: number[]
+  deviceIds: number[]
 
   @IsBoolean()
   simultaneousIrrigation: boolean

@@ -4,7 +4,7 @@ export interface IrrigationProgram {
   duration: number
   wateringPeriod: number
   startTime: string
-  switches: number[]
+  deviceIds: number[]
   simultaneousIrrigation: boolean
   nextRunDate?: string
 }

@@ -71,7 +71,7 @@ describe('IrrigationProgramsService', () => {
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
-        switches: [1, 2],
+        deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
       const irrigationProgram = await service.create(mockCreateDto)
@@ -89,7 +89,7 @@ describe('IrrigationProgramsService', () => {
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
-        switches: [1, 2],
+        deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
       try {
@@ -107,7 +107,7 @@ describe('IrrigationProgramsService', () => {
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
-        switches: [1, 2],
+        deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
       try {
@@ -126,7 +126,7 @@ describe('IrrigationProgramsService', () => {
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
-        switches: [1, 2],
+        deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
       const mockIrrigationProgram2 = {
@@ -134,7 +134,7 @@ describe('IrrigationProgramsService', () => {
         duration: 20,
         wateringPeriod: 4,
         startTime: '05:00',
-        switches: [3],
+        deviceIds: [3],
         simultaneousIrrigation: false,
       }
       const uuid1 = uuidv4()
@@ -177,7 +177,7 @@ describe('IrrigationProgramsService', () => {
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
-        switches: [1, 2],
+        deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
       mockGet.mockResolvedValue({ _id: id, ...mockPartialIrrigationProgram } as IrrigationProgramEntity)
@@ -232,7 +232,7 @@ describe('IrrigationProgramsService', () => {
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
-        switches: [1, 2],
+        deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
       mockGet.mockResolvedValue({ _id: id, _rev: rev, ...mockIrrigationProgram })
@@ -307,7 +307,7 @@ describe('IrrigationProgramsService', () => {
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
-        switches: [1, 2],
+        deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
       mockGet.mockResolvedValue({ _id: id, _rev: rev, ...mockIrrigationProgram })
@@ -333,7 +333,7 @@ describe('IrrigationProgramsService', () => {
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
-        switches: [1, 2],
+        deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
       mockGet.mockResolvedValue({ _id: id, _rev: rev, ...mockIrrigationProgram })

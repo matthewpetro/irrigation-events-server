@@ -17,7 +17,7 @@ const mockCreateDto = {
   duration: 10,
   wateringPeriod: 2,
   startTime: '12:00:00',
-  switches: [1, 2],
+  deviceIds: [1, 2],
   simultaneousIrrigation: true,
 } as CreateIrrigationProgramDto
 

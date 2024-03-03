@@ -18,7 +18,7 @@ const irrigationEntityToIrrigationInterface = (
   duration: irrigationProgramEntity.duration,
   wateringPeriod: irrigationProgramEntity.wateringPeriod,
   startTime: irrigationProgramEntity.startTime,
-  switches: irrigationProgramEntity.switches,
+  deviceIds: irrigationProgramEntity.deviceIds,
   simultaneousIrrigation: irrigationProgramEntity.simultaneousIrrigation,
   nextRunDate: irrigationProgramEntity.nextRunDate,
 })
