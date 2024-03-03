@@ -11,17 +11,11 @@ import { DocumentScope, IdentifiedDocument, MaybeDocument } from 'nano'
 type IrrigationProgramEntityWithId = IrrigationProgramEntity & IdentifiedDocument
 
 const irrigationEntityToIrrigationInterface = (
-  irrigationProgram: IrrigationProgramEntityWithId
-): IrrigationProgram => ({
-  name: irrigationProgram.name,
-  id: irrigationProgram._id,
-  duration: irrigationProgram.duration,
-  wateringPeriod: irrigationProgram.wateringPeriod,
-  startTime: irrigationProgram.startTime,
-  switches: irrigationProgram.switches,
-  simultaneousIrrigation: irrigationProgram.simultaneousIrrigation,
-  nextRunDate: irrigationProgram.nextRunDate,
-})
+  irrigationProgramEntity: IrrigationProgramEntityWithId
+): IrrigationProgram => {
+  const { _id, ...irrigationProgram } = irrigationProgramEntity
+  return { id: _id, ...irrigationProgram } as IrrigationProgram
+}
 
 @Injectable()
 export class IrrigationProgramsService implements OnModuleInit {
