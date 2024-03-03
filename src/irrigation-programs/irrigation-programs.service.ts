@@ -13,6 +13,7 @@ type IrrigationProgramEntityWithId = IrrigationProgramEntity & IdentifiedDocumen
 const irrigationEntityToIrrigationInterface = (
   irrigationProgram: IrrigationProgramEntityWithId
 ): IrrigationProgram => ({
+  name: irrigationProgram.name,
   id: irrigationProgram._id,
   duration: irrigationProgram.duration,
   wateringPeriod: irrigationProgram.wateringPeriod,

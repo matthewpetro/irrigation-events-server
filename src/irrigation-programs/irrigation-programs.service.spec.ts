@@ -67,6 +67,7 @@ describe('IrrigationProgramsService', () => {
     it('should create an irrigation program', async () => {
       mockInsert.mockResolvedValue({ id: uuidv4(), ok: true })
       const mockCreateDto: CreateIrrigationProgramDto = {
+        name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
@@ -84,6 +85,7 @@ describe('IrrigationProgramsService', () => {
     it('should not create an irrigation program because the result is not ok', async () => {
       mockInsert.mockResolvedValue({ ok: false })
       const mockCreateDto: CreateIrrigationProgramDto = {
+        name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
@@ -101,6 +103,7 @@ describe('IrrigationProgramsService', () => {
     it('should not create an irrigation program because the database throws an error', async () => {
       mockInsert.mockRejectedValue({})
       const mockCreateDto: CreateIrrigationProgramDto = {
+        name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
@@ -119,6 +122,7 @@ describe('IrrigationProgramsService', () => {
   describe('get all irrigation programs', () => {
     it('should find all irrigation programs', async () => {
       const mockIrrigationProgram1 = {
+        name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
@@ -126,6 +130,7 @@ describe('IrrigationProgramsService', () => {
         simultaneousIrrigation: true,
       }
       const mockIrrigationProgram2 = {
+        name: 'Irrigation Program 2',
         duration: 20,
         wateringPeriod: 4,
         startTime: '05:00',
@@ -168,6 +173,7 @@ describe('IrrigationProgramsService', () => {
     it('should find one irrigation program', async () => {
       const id = uuidv4()
       const mockPartialIrrigationProgram = {
+        name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
@@ -222,6 +228,7 @@ describe('IrrigationProgramsService', () => {
       const id = uuidv4()
       const rev = '1-234'
       const mockIrrigationProgram: IrrigationProgramEntity = {
+        name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
@@ -296,6 +303,7 @@ describe('IrrigationProgramsService', () => {
       const id = uuidv4()
       const rev = '1-234'
       const mockIrrigationProgram: IrrigationProgramEntity = {
+        name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',
@@ -321,6 +329,7 @@ describe('IrrigationProgramsService', () => {
       const id = uuidv4()
       const rev = '1-234'
       const mockIrrigationProgram: IrrigationProgramEntity = {
+        name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
         startTime: '12:00',

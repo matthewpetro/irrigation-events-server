@@ -1,6 +1,9 @@
-import { IsBoolean, IsISO8601, IsInt, IsOptional, IsPositive, Matches } from 'class-validator'
+import { IsBoolean, IsISO8601, IsInt, IsOptional, IsPositive, Length, Matches } from 'class-validator'
 
 export class CreateIrrigationProgramDto {
+  @Length(1, 255)
+  name: string
+
   @IsInt()
   @IsPositive()
   duration: number
