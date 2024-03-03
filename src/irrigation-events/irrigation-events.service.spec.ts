@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import { IrrigationEventDocument } from './entities/irrigation-event.entity'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
-import { DeviceState } from './enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.interface'
 import { ConfigModule } from '@nestjs/config'
 import { parseISO } from 'date-fns'
 

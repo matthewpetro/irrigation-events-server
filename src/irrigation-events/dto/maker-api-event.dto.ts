@@ -1,4 +1,4 @@
-import { DeviceState } from '../enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.interface'
 import { Equals, IsNumber, IsString, IsEnum } from 'class-validator'
 
 export class MakerApiEventDto {

@@ -6,6 +6,7 @@ import { IrrigationEventsModule } from './irrigation-events/irrigation-events.mo
 import { DevtoolsModule } from '@nestjs/devtools-integration'
 import { SunriseSunsetModule } from './sunrise-sunset/sunrise-sunset.module'
 import { IrrigationProgramsModule } from './irrigation-programs/irrigation-programs.module'
+import { MakerApiModule } from './maker-api/maker-api.module'
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { IrrigationProgramsModule } from './irrigation-programs/irrigation-progr
     IrrigationEventsModule,
     SunriseSunsetModule,
     IrrigationProgramsModule,
+    MakerApiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

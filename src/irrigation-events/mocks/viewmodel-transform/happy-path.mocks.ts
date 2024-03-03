@@ -1,5 +1,5 @@
 import { IrrigationEvent } from '../../interfaces/irrigation-event.interface'
-import { DeviceState } from '../../enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.interface'
 import { DeviceEvents } from '../../interfaces/device-events.interface'
 import { IrrigationEventViewmodel } from '../../dto/irrigation-event-viewmodel.dto'
 

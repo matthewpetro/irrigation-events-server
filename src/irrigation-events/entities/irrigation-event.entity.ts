@@ -1,5 +1,5 @@
 import { IdentifiedDocument } from 'nano'
-import { DeviceState } from '../enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.interface'
 
 export class IrrigationEventDocument implements IdentifiedDocument {
   _id: string

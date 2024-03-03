@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { IrrigationEventsController } from '@/irrigation-events/irrigation-events.controller'
-import { MakerApiService } from './maker-api.service'
+import { MakerApiService } from '@/maker-api/maker-api.service'
 import { ViewmodelTransformService } from './viewmodel-transform.service'
 import { IrrigationEventsService } from './irrigation-events.service'
 import { ConfigModule } from '@nestjs/config'
-import { DeviceState } from './enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.interface'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import { parseISO } from 'date-fns'
-import { DeviceStates } from './interfaces/device-states.interface'
+import { DeviceStates } from '@/maker-api/interfaces/device-states.interface'
 import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
 
 describe('IrrigationEventsController', () => {

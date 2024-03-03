@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { MakerApiService } from '@/irrigation-events/maker-api.service'
+import { MakerApiService } from './maker-api.service'
 import { ConfigModule } from '@nestjs/config'
 import mockData from './mocks/maker-api.mocks.json'
 import axios from 'axios'

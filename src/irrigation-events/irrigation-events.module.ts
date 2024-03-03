@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { MakerApiModule } from '@/maker-api/maker-api.module'
 import { IrrigationEventsService } from '@/irrigation-events/irrigation-events.service'
 import { IrrigationEventsController } from '@/irrigation-events/irrigation-events.controller'
-import { MakerApiService } from './maker-api.service'
 import { ViewmodelTransformService } from './viewmodel-transform.service'
 import { DatabaseModule } from '@/database/database.module'
 
 @Module({
-  imports: [ConfigModule, DatabaseModule],
+  imports: [ConfigModule, DatabaseModule, MakerApiModule],
   controllers: [IrrigationEventsController],
-  providers: [IrrigationEventsService, MakerApiService, ViewmodelTransformService],
+  providers: [IrrigationEventsService, ViewmodelTransformService],
 })
 export class IrrigationEventsModule {}

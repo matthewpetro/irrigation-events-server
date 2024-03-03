@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { compareAsc, roundToNearestMinutes } from 'date-fns'
 import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
-import { DeviceState } from './enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.interface'
 import { Warning } from './enums/warning.interface'
 import { DeviceEvents } from './interfaces/device-events.interface'
 
