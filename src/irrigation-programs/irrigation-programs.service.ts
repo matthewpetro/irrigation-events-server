@@ -6,16 +6,22 @@ import { IrrigationProgram } from './interfaces/irrigation-program.interface'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
 import { DatabaseService } from '@/database/database.service'
-import { DocumentScope, IdentifiedDocument, MaybeDocument } from 'nano'
+import { DocumentScope, IdentifiedDocument, MaybeDocument, MaybeRevisionedDocument } from 'nano'
 
 type IrrigationProgramEntityWithId = IrrigationProgramEntity & IdentifiedDocument
 
 const irrigationEntityToIrrigationInterface = (
   irrigationProgramEntity: IrrigationProgramEntityWithId
-): IrrigationProgram => {
-  const { _id, ...irrigationProgram } = irrigationProgramEntity
-  return { id: _id, ...irrigationProgram } as IrrigationProgram
-}
+): IrrigationProgram => ({
+  id: irrigationProgramEntity._id,
+  name: irrigationProgramEntity.name,
+  duration: irrigationProgramEntity.duration,
+  wateringPeriod: irrigationProgramEntity.wateringPeriod,
+  startTime: irrigationProgramEntity.startTime,
+  switches: irrigationProgramEntity.switches,
+  simultaneousIrrigation: irrigationProgramEntity.simultaneousIrrigation,
+  nextRunDate: irrigationProgramEntity.nextRunDate,
+})
 
 @Injectable()
 export class IrrigationProgramsService implements OnModuleInit {
@@ -62,7 +68,7 @@ export class IrrigationProgramsService implements OnModuleInit {
       if (result._deleted) {
         throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
       }
-      return result as IrrigationProgramEntityWithId
+      return result as IrrigationProgramEntityWithId & MaybeRevisionedDocument
     } catch (error) {
       if (error instanceof HttpException) {
         throw error
