@@ -15,7 +15,8 @@ export class SunriseSunsetController {
   constructor(private sunriseSunsetService: SunriseSunsetService) {}
 
   @Get()
-  async get(@Query() { startDate, endDate }: QueryParameters): Promise<any> {
-    return this.sunriseSunsetService.getSunriseSunsets(parseISO(startDate), parseISO(endDate))
+  async get(@Query() { startDate, endDate }: QueryParameters) {
+    const result = await this.sunriseSunsetService.getSunriseSunsets(parseISO(startDate), parseISO(endDate))
+    return Object.fromEntries(result)
   }
 }
