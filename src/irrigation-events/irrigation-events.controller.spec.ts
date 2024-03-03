@@ -8,7 +8,6 @@ import { DeviceState } from '@/enums/device-state.interface'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import { parseISO } from 'date-fns'
-import { DeviceStates } from '@/maker-api/interfaces/device-states.interface'
 import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
 
 describe('IrrigationEventsController', () => {
@@ -185,7 +184,7 @@ describe('IrrigationEventsController', () => {
       },
     ] as IrrigationEvent[])
     mockGetEventsAfterEnd.mockResolvedValue([])
-    mockGetAllDeviceDetails.mockResolvedValue({ 42: DeviceState.ON } as DeviceStates)
+    mockGetAllDeviceDetails.mockResolvedValue({ 42: DeviceState.ON })
     const dateSpy = jest.spyOn(Date, 'now').mockImplementation(() => new Date('2024-01-01T11:30:00.000Z').getTime())
     const startTimestamp = '2024-01-01T00:00:00.000Z'
     const endTimestamp = '2024-01-02T00:00:00.000Z'

@@ -2,8 +2,18 @@ import EnvironmentVariables from '@/environment-variables'
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import axios, { AxiosInstance } from 'axios'
-import { MakerDeviceDetails } from './interfaces/maker-device-details.interface'
-import { DeviceStates } from './interfaces/device-states.interface'
+import { DeviceState } from '@/enums/device-state.interface'
+
+interface DeviceStates {
+  [deviceId: number]: DeviceState | undefined
+}
+
+interface MakerDeviceDetails {
+  id: string
+  attributes: {
+    switch: DeviceState
+  }
+}
 
 @Injectable()
 export class MakerApiService implements OnModuleInit {
@@ -23,5 +33,14 @@ export class MakerApiService implements OnModuleInit {
     const response = await this.axiosInstance.get<MakerDeviceDetails[]>('/all')
     const data = response.data ?? []
     return Object.fromEntries(data.map((device) => [parseInt(device.id, 10), device.attributes.switch])) as DeviceStates
+  }
+
+  public async setDeviceState(deviceId: number, state: DeviceState) {
+    await this.axiosInstance.get(`/${deviceId}/${state}`)
+  }
+
+  public async getDeviceState(deviceId: number) {
+    const response = await this.axiosInstance.get<{ value: string }>(`/${deviceId}/attribute/switch`)
+    return response.data.value as DeviceState
   }
 }
