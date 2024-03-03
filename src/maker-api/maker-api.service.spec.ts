@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { MakerApiService } from './maker-api.service'
 import { ConfigModule } from '@nestjs/config'
+import { DeviceState } from '@/enums/device-state.interface'
 import mockData from './mocks/maker-api.mocks.json'
 import axios from 'axios'
 
@@ -47,5 +48,17 @@ describe('MakerApiService', () => {
     mockGet.mockResolvedValue({ data: [] })
     const deviceDetails = await service.getAllDeviceDetails()
     expect(deviceDetails).toEqual({})
+  })
+
+  it('should set a device state correctly', async () => {
+    await service.setDeviceState(42, DeviceState.ON)
+    expect(mockGet).toHaveBeenCalledWith(`/42/${DeviceState.ON}`)
+  })
+
+  it('should get a device state correctly', async () => {
+    mockGet.mockResolvedValue({ data: { value: DeviceState.ON } })
+    const deviceState = await service.getDeviceState(42)
+    expect(mockGet).toHaveBeenCalledWith(`/42/attribute/switch`)
+    expect(deviceState).toEqual(DeviceState.ON)
   })
 })
