@@ -16,7 +16,7 @@ describe('IrrigationEventsController', () => {
   const mockGetIrrigationEvents = jest.fn()
   const mockGetEventsBeforeStart = jest.fn()
   const mockGetEventsAfterEnd = jest.fn()
-  const mockGetAllDeviceDetails = jest.fn()
+  const mockgetAllDeviceStates = jest.fn()
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,7 +35,7 @@ describe('IrrigationEventsController', () => {
         }
         if (token === MakerApiService) {
           return {
-            getAllDeviceDetails: mockGetAllDeviceDetails,
+            getAllDeviceStates: mockgetAllDeviceStates,
           }
         }
       })
@@ -184,13 +184,13 @@ describe('IrrigationEventsController', () => {
       },
     ] as IrrigationEvent[])
     mockGetEventsAfterEnd.mockResolvedValue([])
-    mockGetAllDeviceDetails.mockResolvedValue({ 42: DeviceState.ON })
+    mockgetAllDeviceStates.mockResolvedValue({ 42: DeviceState.ON })
     const dateSpy = jest.spyOn(Date, 'now').mockImplementation(() => new Date('2024-01-01T11:30:00.000Z').getTime())
     const startTimestamp = '2024-01-01T00:00:00.000Z'
     const endTimestamp = '2024-01-02T00:00:00.000Z'
     const viewmodels = await controller.get({ startTimestamp, endTimestamp })
     expect(mockGetIrrigationEvents).toHaveBeenCalledWith(startTimestamp, endTimestamp)
-    expect(mockGetAllDeviceDetails).toHaveBeenCalled()
+    expect(mockgetAllDeviceStates).toHaveBeenCalled()
     expect(viewmodels).toEqual([
       {
         startTimestamp: '2024-01-01T11:00:00.000Z',

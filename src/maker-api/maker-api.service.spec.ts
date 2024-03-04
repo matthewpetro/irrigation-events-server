@@ -34,20 +34,20 @@ describe('MakerApiService', () => {
 
   it('should return data correctly', async () => {
     mockGet.mockResolvedValue({ data: mockData.input })
-    const deviceDetails = await service.getAllDeviceDetails()
-    expect(deviceDetails).toEqual(mockData.output)
+    const deviceStates = await service.getAllDeviceStates()
+    expect(deviceStates).toEqual(mockData.output)
   })
 
   it('should return empty object if no data is returned', async () => {
     mockGet.mockResolvedValue({ data: undefined })
-    const deviceDetails = await service.getAllDeviceDetails()
-    expect(deviceDetails).toEqual({})
+    const deviceStates = await service.getAllDeviceStates()
+    expect(deviceStates).toEqual({})
   })
 
   it('should return empty object if an empty array is returned', async () => {
     mockGet.mockResolvedValue({ data: [] })
-    const deviceDetails = await service.getAllDeviceDetails()
-    expect(deviceDetails).toEqual({})
+    const deviceStates = await service.getAllDeviceStates()
+    expect(deviceStates).toEqual({})
   })
 
   it('should set a device state correctly', async () => {

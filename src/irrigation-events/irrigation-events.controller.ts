@@ -97,9 +97,9 @@ export class IrrigationEventsController {
   }
 
   private async addCurrentDeviceStates(deviceEventsList: DeviceEvents[]): Promise<void> {
-    const deviceDetails = await this.makerApiService.getAllDeviceDetails()
+    const deviceStates = await this.makerApiService.getAllDeviceStates()
     deviceEventsList.forEach((deviceEvents) => {
-      deviceEvents.currentDeviceState = deviceDetails[deviceEvents.deviceId]
+      deviceEvents.currentDeviceState = deviceStates[deviceEvents.deviceId]
     })
   }
 }
