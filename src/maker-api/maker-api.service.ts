@@ -3,10 +3,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import axios, { AxiosInstance } from 'axios'
 import { DeviceState } from '@/enums/device-state.interface'
-
-interface DeviceStates {
-  [deviceId: number]: DeviceState | undefined
-}
+import { DeviceStates } from './interfaces/device-states.interface'
 
 interface MakerDeviceDetails {
   id: string
