@@ -58,6 +58,10 @@ export class SunriseSunsetService implements OnModuleInit {
     )
   }
 
+  public async getSunriseSunset(date: Date) {
+    return this.getSunriseSunsets(date, date)
+  }
+
   public async getSunriseSunsets(startDate: Date, endDate: Date) {
     const dbDocs = await this.getSunriseSunsetsFromDb(formatDate(startDate), formatDate(endDate))
     const sunriseSunsets = dbDocumentsToSunriseSunsets(dbDocs)
