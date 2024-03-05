@@ -1,4 +1,5 @@
 import { IsBoolean, IsISO8601, IsInt, IsOptional, IsPositive, Length, Matches } from 'class-validator'
+import { DeviceId } from '@/types'
 
 export class CreateIrrigationProgramDto {
   @Length(1, 255)
@@ -23,7 +24,7 @@ export class CreateIrrigationProgramDto {
 
   @IsInt({ each: true })
   @IsPositive({ each: true })
-  deviceIds: number[]
+  deviceIds: DeviceId[]
 
   @IsBoolean()
   simultaneousIrrigation: boolean
