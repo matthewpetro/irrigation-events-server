@@ -1,6 +1,6 @@
 export interface SunriseSunset {
-  sunrise: string
-  sunset: string
+  sunrise: Date
+  sunset: Date
 }
 
 export type SunriseSunsets = Map<string, SunriseSunset>

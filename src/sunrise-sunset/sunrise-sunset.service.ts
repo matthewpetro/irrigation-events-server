@@ -7,7 +7,7 @@ import axios, { AxiosInstance } from 'axios'
 import { SunriseSunsetEntity } from './entities/sunrise-sunset.entity'
 import { SunriseSunsetResponse } from './interfaces/sunrise-sunset-response.interface'
 import { sunriseSunsetQueryBuilder } from './queries'
-import { addDays, format } from 'date-fns'
+import { addDays, format, parseISO } from 'date-fns'
 import type { SunriseSunsets } from './interfaces/sunrise-sunset.interface'
 
 const formatDate = (date: Date) => format(date, 'yyyy-MM-dd')
@@ -27,8 +27,8 @@ const sunriseSunsetToDbDocument = ({ results }: SunriseSunsetResponse) => {
 const dbDocumentsToSunriseSunsets = (documents: SunriseSunsetEntity[]) =>
   documents.reduce((accumulator, document) => {
     accumulator.set(document._id, {
-      sunrise: document.sunrise,
-      sunset: document.sunset,
+      sunrise: parseISO(document.sunrise),
+      sunset: parseISO(document.sunset),
     })
     return accumulator
   }, new Map() as SunriseSunsets)
@@ -75,8 +75,8 @@ export class SunriseSunsetService implements OnModuleInit {
       if (!sunriseSunsets.has(dateString)) {
         const sunriseSunsetResponse = await this.getSunriseSunsetFromApi(dateString)
         sunriseSunsets.set(dateString, {
-          sunrise: sunriseSunsetResponse.results.sunrise,
-          sunset: sunriseSunsetResponse.results.sunset,
+          sunrise: parseISO(sunriseSunsetResponse.results.sunrise),
+          sunset: parseISO(sunriseSunsetResponse.results.sunset),
         })
         // We don't need to wait for the insert to complete, so we don't await it.
         // If it fails, log it and move on.
