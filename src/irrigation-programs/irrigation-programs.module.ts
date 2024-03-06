@@ -8,5 +8,6 @@ import { DatabaseModule } from '@/database/database.module'
   imports: [ConfigModule, DatabaseModule],
   controllers: [IrrigationProgramsController],
   providers: [IrrigationProgramsService],
+  exports: [IrrigationProgramsService],
 })
 export class IrrigationProgramsModule {}
