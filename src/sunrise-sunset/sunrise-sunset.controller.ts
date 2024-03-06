@@ -19,4 +19,10 @@ export class SunriseSunsetController {
     const result = await this.sunriseSunsetService.getSunriseSunsets(parseISO(startDate), parseISO(endDate))
     return Object.fromEntries(result)
   }
+
+  @Get('one')
+  async getOne(@Query('date') date: string) {
+    const result = await this.sunriseSunsetService.getSunriseSunset(parseISO(date))
+    return result
+  }
 }

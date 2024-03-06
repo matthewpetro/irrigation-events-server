@@ -5,7 +5,7 @@ import axios, { AxiosRequestConfig } from 'axios'
 import { format, parseISO } from 'date-fns'
 import { DatabaseModule } from '@/database/database.module'
 import { SunriseSunsetEntity } from './entities/sunrise-sunset.entity'
-import type { SunriseSunsets } from './interfaces/sunrise-sunset.interface'
+import type { SunriseSunset, SunriseSunsets } from './interfaces/sunrise-sunset.interface'
 
 // Mock the Nano library
 const mockInsert = jest.fn()
@@ -159,6 +159,88 @@ describe('SunriseSunsetService', () => {
     } as SunriseSunsetEntity)
     expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-02' } })
     expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-03' } })
+    expect(result).toEqual(mockResponse)
+  })
+
+  it('should get one sunrise/sunset data from the database', async () => {
+    const mockDbDocs: SunriseSunsetEntity[] = [
+      { _id: '2024-01-01', sunrise: '2024-01-01T07:00:00-07:00', sunset: '2024-01-01T19:00:00-07:00' },
+      { _id: '2024-01-02', sunrise: '2024-01-02T07:01:00-07:00', sunset: '2024-01-02T19:00:01-07:00' },
+      { _id: '2024-01-03', sunrise: '2024-01-03T07:02:00-07:00', sunset: '2024-01-03T19:00:02-07:00' },
+    ]
+    const mockResponse: SunriseSunset = {
+      sunrise: parseISO('2024-01-01T07:00:00-07:00'),
+      sunset: parseISO('2024-01-01T19:00:00-07:00'),
+    }
+
+    const mockDate = parseISO('2024-01-01')
+    mockFind.mockResolvedValue({ docs: mockDbDocs })
+    const result = await service.getSunriseSunset(mockDate)
+    expect(mockFind).toHaveBeenCalledWith({
+      selector: {
+        $and: [
+          {
+            _id: {
+              $gte: format(mockDate, 'yyyy-MM-dd'),
+            },
+          },
+          {
+            _id: {
+              $lte: format(mockDate, 'yyyy-MM-dd'),
+            },
+          },
+        ],
+      },
+      sort: [{ _id: 'asc' }],
+      limit: 10000,
+    })
+    expect(mockGet).not.toHaveBeenCalled()
+    expect(result).toEqual(mockResponse)
+  })
+
+  it('should get one sunrise/sunset from the API and store it in the database', async () => {
+    const mockDbDocs: SunriseSunsetEntity[] = []
+    mockGet.mockImplementation(() => {
+      return Promise.resolve({
+        data: {
+          results: {
+            sunrise: '2024-01-01T07:00:00-07:00',
+            sunset: '2024-01-01T19:00:00-07:00',
+          },
+        },
+      })
+    })
+    const mockResponse: SunriseSunset = {
+      sunrise: parseISO('2024-01-01T07:00:00-07:00'),
+      sunset: parseISO('2024-01-01T19:00:00-07:00'),
+    }
+    const mockDate = parseISO('2024-01-01')
+    mockFind.mockResolvedValue({ docs: mockDbDocs })
+    const result = await service.getSunriseSunset(mockDate)
+    expect(mockFind).toHaveBeenCalledWith({
+      selector: {
+        $and: [
+          {
+            _id: {
+              $gte: format(mockDate, 'yyyy-MM-dd'),
+            },
+          },
+          {
+            _id: {
+              $lte: format(mockDate, 'yyyy-MM-dd'),
+            },
+          },
+        ],
+      },
+      sort: [{ _id: 'asc' }],
+      limit: 10000,
+    })
+    expect(mockInsert).toHaveBeenCalledWith({
+      _id: '2024-01-01',
+      sunrise: '2024-01-01T07:00:00-07:00',
+      sunset: '2024-01-01T19:00:00-07:00',
+    } as SunriseSunsetEntity)
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-01' } })
     expect(result).toEqual(mockResponse)
   })
 })

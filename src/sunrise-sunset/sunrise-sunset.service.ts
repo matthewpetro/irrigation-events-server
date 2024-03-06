@@ -59,7 +59,8 @@ export class SunriseSunsetService implements OnModuleInit {
   }
 
   public async getSunriseSunset(date: Date) {
-    return this.getSunriseSunsets(date, date)
+    const sunriseSunsets = await this.getSunriseSunsets(date, date)
+    return sunriseSunsets.get(formatDate(date))
   }
 
   public async getSunriseSunsets(startDate: Date, endDate: Date) {
