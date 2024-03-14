@@ -1,5 +1,6 @@
-import { IsBoolean, IsISO8601, IsInt, IsOptional, IsPositive, Length, Matches } from 'class-validator'
+import { IsBoolean, IsISO8601, IsInt, IsOptional, IsPositive, Length, Matches, MinDate } from 'class-validator'
 import { DeviceId } from '@/types'
+import { startOfToday } from 'date-fns'
 
 export class CreateIrrigationProgramDto {
   @Length(1, 255)
@@ -32,5 +33,6 @@ export class CreateIrrigationProgramDto {
   @IsISO8601()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   @IsOptional()
+  @MinDate(startOfToday())
   nextRunDate?: string
 }
