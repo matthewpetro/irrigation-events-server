@@ -1,4 +1,5 @@
 import { DeviceId } from '@/types'
+import { DeviceInterval } from './device-interval.interface'
 
 export interface IrrigationProgram {
   id: string
@@ -9,4 +10,5 @@ export interface IrrigationProgram {
   deviceIds: DeviceId[]
   simultaneousIrrigation: boolean
   nextRunDate?: string
+  deviceIntervals?: DeviceInterval[]
 }

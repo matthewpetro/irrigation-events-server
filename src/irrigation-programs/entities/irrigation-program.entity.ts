@@ -1,4 +1,5 @@
 import { DeviceId } from '@/types'
+import { DeviceInterval } from '../interfaces/device-interval.interface'
 
 export class IrrigationProgramEntity {
   constructor(
@@ -8,6 +9,7 @@ export class IrrigationProgramEntity {
     public readonly startTime: string,
     public readonly deviceIds: DeviceId[],
     public readonly simultaneousIrrigation: boolean,
-    public readonly nextRunDate?: string
+    public readonly nextRunDate?: string,
+    public readonly deviceIntervals?: DeviceInterval[]
   ) {}
 }
