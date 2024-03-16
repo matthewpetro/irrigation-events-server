@@ -7,7 +7,7 @@ import axios, { AxiosInstance } from 'axios'
 import { SunriseSunsetEntity } from './entities/sunrise-sunset.entity'
 import { SunriseSunsetResponse } from './interfaces/sunrise-sunset-response.interface'
 import { sunriseSunsetQueryBuilder } from './queries'
-import { addDays, format, parseISO } from 'date-fns'
+import { addDays, format, isBefore, isEqual, parseISO } from 'date-fns'
 import type { SunriseSunsets } from './interfaces/sunrise-sunset.interface'
 
 const formatDate = (date: Date) => format(date, 'yyyy-MM-dd')
@@ -68,7 +68,7 @@ export class SunriseSunsetService implements OnModuleInit {
     const sunriseSunsets = dbDocumentsToSunriseSunsets(dbDocs)
 
     // Iterate through each day between the start and end dates
-    for (let date = new Date(startDate); date <= endDate; date = addDays(date, 1)) {
+    for (let date = startDate; isBefore(date, endDate) || isEqual(date, endDate); date = addDays(date, 1)) {
       const dateString = formatDate(date)
 
       // If we don't have a sunrise/sunset for the date, fetch it from the API,
