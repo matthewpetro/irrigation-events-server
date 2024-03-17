@@ -3,6 +3,7 @@ import { IrrigationSchedulerService } from './irrigation-scheduler.service'
 import { IrrigationProgramsModule } from '@/irrigation-programs/irrigation-programs.module'
 import { MakerApiModule } from '@/maker-api/maker-api.module'
 import { SunriseSunsetModule } from '@/sunrise-sunset/sunrise-sunset.module'
+import { ConfigModule } from '@nestjs/config'
 
 describe('IrrigationSchedulerService', () => {
   let service: IrrigationSchedulerService
@@ -10,7 +11,12 @@ describe('IrrigationSchedulerService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [IrrigationSchedulerService],
-      imports: [IrrigationProgramsModule, MakerApiModule, SunriseSunsetModule],
+      imports: [
+        ConfigModule.forRoot({ envFilePath: '.env.testing' }),
+        IrrigationProgramsModule,
+        MakerApiModule,
+        SunriseSunsetModule,
+      ],
     }).compile()
 
     service = module.get<IrrigationSchedulerService>(IrrigationSchedulerService)
