@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
 import { IrrigationSchedulerService } from './irrigation-scheduler.service'
-import { IrrigationProgramsService } from '@/irrigation-programs/irrigation-programs.service'
-import { MakerApiService } from '@/maker-api/maker-api.service'
-import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
+import { IrrigationProgramsModule } from '@/irrigation-programs/irrigation-programs.module'
+import { MakerApiModule } from '@/maker-api/maker-api.module'
+import { SunriseSunsetModule } from '@/sunrise-sunset/sunrise-sunset.module'
 
 @Module({
-  imports: [IrrigationProgramsService, MakerApiService, SunriseSunsetService],
+  imports: [IrrigationProgramsModule, MakerApiModule, SunriseSunsetModule],
   providers: [IrrigationSchedulerService],
 })
 export class IrrigationSchedulerModule {}
