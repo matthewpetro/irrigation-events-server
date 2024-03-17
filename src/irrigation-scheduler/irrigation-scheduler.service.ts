@@ -105,9 +105,6 @@ export class IrrigationSchedulerService {
       console.error('Error getting irrigation programs:', error)
       return
     }
-    // console.log(`Sunrise sunset is: ${JSON.stringify(sunriseSunset)}`)
-    // console.log(`Irrigation programs are: ${JSON.stringify(irrigationPrograms)}`)
-    // return
     const currentlyRunningPrograms = irrigationPrograms.filter(isProgramRunning)
     const currentlyRunningDeviceIntervals = currentlyRunningPrograms.flatMap((program) => program.deviceIntervals!)
 
@@ -120,12 +117,12 @@ export class IrrigationSchedulerService {
       const deviceIntervals = calculateDeviceIntervals(program, actualStartTime)
       const nextRunDate = calculateNextRunDate(program)
       try {
-        await this.irrigationProgramsService.update(program.id, {
+        const updatedProgram = await this.irrigationProgramsService.update(program.id, {
           deviceIntervals,
           nextRunDate,
         } as UpdateIrrigationProgram)
         currentlyRunningDeviceIntervals.push(...deviceIntervals)
-        currentlyRunningPrograms.push(program)
+        currentlyRunningPrograms.push(updatedProgram)
       } catch (error) {
         console.error(
           `Error setting device intervals and next run date for irrigation program with name ${program.name} and ID ${program.id}:`,
@@ -160,7 +157,7 @@ export class IrrigationSchedulerService {
       if (areAllIntervalsCompleted) {
         try {
           await this.irrigationProgramsService.update(program.id, {
-            deviceIntervals: undefined,
+            deviceIntervals: null,
           } as UpdateIrrigationProgram)
         } catch (error) {
           console.error(
