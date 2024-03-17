@@ -12,6 +12,7 @@ import {
   format,
   interval,
   isBefore,
+  isPast,
   isThisMinute,
   isToday,
   parseISO,
@@ -68,24 +69,18 @@ function calculateDeviceIntervals(irrigationProgram: IrrigationProgram, actualSt
   return deviceIntervals
 }
 
-function calculateNextRunDate(irrigationProgram: IrrigationProgram): string {
-  const { wateringPeriod } = irrigationProgram
-  return format(addDays(Date.now(), wateringPeriod), 'yyyy-MM-dd')
-}
+const calculateNextRunDate = ({ wateringPeriod }: IrrigationProgram) =>
+  format(addDays(Date.now(), wateringPeriod), 'yyyy-MM-dd')
 
 // A program should run today if it has no next run date, or if the next run date is today or in the past.
 // Next run dates in the past shouldn't happen, but in case of a bug or weird edge case, this will handle it.
-function shouldProgramRunToday({ nextRunDate }: IrrigationProgram) {
-  return !nextRunDate || isToday(parseISO(nextRunDate)) || isBefore(parseISO(nextRunDate), startOfToday())
-}
+const shouldProgramRunToday = ({ nextRunDate }: IrrigationProgram) =>
+  !nextRunDate || isToday(parseISO(nextRunDate)) || isBefore(parseISO(nextRunDate), startOfToday())
 
-function isProgramStartTime(program: IrrigationProgram, sunriseSunset: SunriseSunset) {
-  return !isProgramRunning(program) && isThisMinute(convertStartTimeToActualTime(program.startTime, sunriseSunset))
-}
+const isProgramStartTime = (program: IrrigationProgram, sunriseSunset: SunriseSunset) =>
+  !isProgramRunning(program) && isThisMinute(convertStartTimeToActualTime(program.startTime, sunriseSunset))
 
-function isProgramRunning({ deviceIntervals }: IrrigationProgram) {
-  return !!deviceIntervals
-}
+const isProgramRunning = ({ deviceIntervals }: IrrigationProgram) => !!deviceIntervals
 
 @Injectable()
 export class IrrigationSchedulerService {
@@ -99,10 +94,10 @@ export class IrrigationSchedulerService {
   async run() {
     const sunriseSunset = await this.sunriseSunsetService.getSunriseSunset(new Date())
     const irrigationPrograms = await this.irrigationProgramsService.findAll()
-    // Get all the intervals for currently running programs
-    const currentlyRunningDeviceIntervals = irrigationPrograms
-      .filter(isProgramRunning)
-      .flatMap((program) => program.deviceIntervals!)
+    const currentlyRunningPrograms = irrigationPrograms.filter(isProgramRunning)
+    const currentlyRunningDeviceIntervals = currentlyRunningPrograms.flatMap((program) => program.deviceIntervals!)
+
+    // Get all programs that should start now and calculate the intervals for each device
     const programsToStart = irrigationPrograms.filter(
       (program) => shouldProgramRunToday(program) && isProgramStartTime(program, sunriseSunset)
     )
@@ -115,7 +110,10 @@ export class IrrigationSchedulerService {
         nextRunDate,
       } as UpdateIrrigationProgram)
       currentlyRunningDeviceIntervals.push(...deviceIntervals)
+      currentlyRunningPrograms.push(program)
     }
+
+    // Check all intervals and turn devices on or off as needed
     for (const deviceInterval of currentlyRunningDeviceIntervals) {
       const { deviceId, interval } = deviceInterval
       if (isThisMinute(interval.start)) {
@@ -123,6 +121,17 @@ export class IrrigationSchedulerService {
       }
       if (isThisMinute(interval.end)) {
         await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
+      }
+    }
+
+    // Check if any programs have completed and remove the intervals from the database
+    for (const program of currentlyRunningPrograms) {
+      const deviceIntervals = program.deviceIntervals!
+      const areAllIntervalsCompleted = deviceIntervals.every((deviceInterval) => isPast(deviceInterval.interval.end))
+      if (areAllIntervalsCompleted) {
+        await this.irrigationProgramsService.update(program.id, {
+          deviceIntervals: undefined,
+        } as UpdateIrrigationProgram)
       }
     }
   }
