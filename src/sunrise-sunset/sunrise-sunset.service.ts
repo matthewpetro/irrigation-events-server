@@ -50,7 +50,6 @@ export class SunriseSunsetService implements OnModuleInit {
         lat: this.configService.get<number>('LATITUDE', { infer: true }),
         lng: this.configService.get<number>('LONGITUDE', { infer: true }),
         formatted: 0,
-        tzid: 'America/Phoenix',
       },
     })
     this.db = this.databaseService.getDatabaseConnection(
