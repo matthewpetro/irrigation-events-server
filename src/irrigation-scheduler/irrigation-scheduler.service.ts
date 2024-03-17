@@ -22,6 +22,8 @@ import {
 } from 'date-fns'
 import type { UpdateIrrigationProgram } from '@/irrigation-programs/types'
 import { DeviceState } from '@/enums/device-state.interface'
+import { ConfigService } from '@nestjs/config'
+import EnvironmentVariables from '@/environment-variables'
 
 // When the start time of a program is reached, calculate the intervals for each device for the
 // whole program.
@@ -84,6 +86,7 @@ const isProgramRunning = ({ deviceIntervals }: IrrigationProgram) => !!deviceInt
 @Injectable()
 export class IrrigationSchedulerService {
   public constructor(
+    private configService: ConfigService<EnvironmentVariables, true>,
     private irrigationProgramsService: IrrigationProgramsService,
     private makerApiService: MakerApiService,
     private sunriseSunsetService: SunriseSunsetService
@@ -132,11 +135,13 @@ export class IrrigationSchedulerService {
     }
 
     // Check all intervals and turn devices on or off as needed
+    const meteringInterval = this.configService.get<number>('SWITCH_METERING_INTERVAL', { infer: true }) ?? 500
     for (const deviceInterval of currentlyRunningDeviceIntervals) {
       const { deviceId, interval } = deviceInterval
       if (isThisMinute(interval.start)) {
         try {
           await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
+          await new Promise((resolve) => setTimeout(resolve, meteringInterval))
         } catch (error) {
           console.error(`Error turning device with ID ${deviceId} on:`, error)
         }
@@ -144,6 +149,7 @@ export class IrrigationSchedulerService {
       if (isThisMinute(interval.end)) {
         try {
           await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
+          await new Promise((resolve) => setTimeout(resolve, meteringInterval))
         } catch (error) {
           console.error(`Error turning device with ID ${deviceId} off:`, error)
         }

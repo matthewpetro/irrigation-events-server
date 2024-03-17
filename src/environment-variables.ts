@@ -15,4 +15,6 @@ export default interface EnvironmentVariables {
   SUNRISE_SUNSET_API_URL: string
   LATITUDE: number
   LONGITUDE: number
+
+  SWITCH_METERING_INTERVAL: number
 }
