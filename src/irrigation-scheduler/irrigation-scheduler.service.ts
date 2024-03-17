@@ -23,31 +23,30 @@ import {
 import type { UpdateIrrigationProgram } from '@/irrigation-programs/types'
 import { DeviceState } from '@/enums/device-state.interface'
 
-// When the first start time of a program is reached, calculate the intervals for each device for the
+// When the start time of a program is reached, calculate the intervals for each device for the
 // whole program.
 // Save the intervals to the database and also update the next run date in the database.
-// Once a program starts running, no more changes can be made to the current run.
-// When the last interval is completed, delete all intervals from the database.
+// This means that once a program starts running, no more changes can be made to the current run.
+// When all intervals are completed, delete all intervals from the database.
 // When checking programs to see if they should run, look for intervals. If they
-// are stored in the database, we don't need to consider start times, start dates,
-// or anything else.
-// This can handle multiple devices, multiple start times, and intervals that span midnight.
+// are stored in the database, that means the program is running.
 
 function convertStartTimeToActualTime(startTime: string, sunriseSunset: SunriseSunset) {
   const sunriseSunsetRegex = /^(?<sunriseOrSunset>sunset|sunrise)(?<offset>[+-]?\d+)?$/
   const matches = startTime.match(sunriseSunsetRegex)
+  let actualStartTime: Date
   if (matches) {
     // If the start time is a sunrise or sunset, then we need to determine the actual time
     // based on the sunrise or sunset and offset.
     const { sunriseOrSunset, offset } = matches.groups!
     const realTimeOfDay = sunriseSunset[sunriseOrSunset] as Date
-    const actualStartTime = addMinutes(realTimeOfDay, parseInt(offset))
-    return startOfMinute(actualStartTime)
+    actualStartTime = addMinutes(realTimeOfDay, parseInt(offset))
   } else {
     // Otherwise, we just need to turn the start time into a Date object
     const [hours, minutes] = startTime.split(':')
-    return set(Date.now(), { hours: parseInt(hours), minutes: parseInt(minutes), seconds: 0, milliseconds: 0 })
+    actualStartTime = set(Date.now(), { hours: parseInt(hours), minutes: parseInt(minutes) })
   }
+  return startOfMinute(actualStartTime)
 }
 
 function calculateDeviceIntervals(irrigationProgram: IrrigationProgram, actualStartTime: Date): DeviceInterval[] {
@@ -92,8 +91,23 @@ export class IrrigationSchedulerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async run() {
-    const sunriseSunset = await this.sunriseSunsetService.getSunriseSunset(new Date())
-    const irrigationPrograms = await this.irrigationProgramsService.findAll()
+    let sunriseSunset: SunriseSunset
+    let irrigationPrograms: IrrigationProgram[]
+    try {
+      sunriseSunset = await this.sunriseSunsetService.getSunriseSunset(new Date())
+    } catch (error) {
+      console.error('Error getting sunrise and sunset for today:', error)
+      return
+    }
+    try {
+      irrigationPrograms = await this.irrigationProgramsService.findAll()
+    } catch (error) {
+      console.error('Error getting irrigation programs:', error)
+      return
+    }
+    // console.log(`Sunrise sunset is: ${JSON.stringify(sunriseSunset)}`)
+    // console.log(`Irrigation programs are: ${JSON.stringify(irrigationPrograms)}`)
+    // return
     const currentlyRunningPrograms = irrigationPrograms.filter(isProgramRunning)
     const currentlyRunningDeviceIntervals = currentlyRunningPrograms.flatMap((program) => program.deviceIntervals!)
 
@@ -105,22 +119,37 @@ export class IrrigationSchedulerService {
       const actualStartTime = convertStartTimeToActualTime(program.startTime, sunriseSunset)
       const deviceIntervals = calculateDeviceIntervals(program, actualStartTime)
       const nextRunDate = calculateNextRunDate(program)
-      await this.irrigationProgramsService.update(program.id, {
-        deviceIntervals,
-        nextRunDate,
-      } as UpdateIrrigationProgram)
-      currentlyRunningDeviceIntervals.push(...deviceIntervals)
-      currentlyRunningPrograms.push(program)
+      try {
+        await this.irrigationProgramsService.update(program.id, {
+          deviceIntervals,
+          nextRunDate,
+        } as UpdateIrrigationProgram)
+        currentlyRunningDeviceIntervals.push(...deviceIntervals)
+        currentlyRunningPrograms.push(program)
+      } catch (error) {
+        console.error(
+          `Error setting device intervals and next run date for irrigation program with name ${program.name} and ID ${program.id}:`,
+          error
+        )
+      }
     }
 
     // Check all intervals and turn devices on or off as needed
     for (const deviceInterval of currentlyRunningDeviceIntervals) {
       const { deviceId, interval } = deviceInterval
       if (isThisMinute(interval.start)) {
-        await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
+        try {
+          await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
+        } catch (error) {
+          console.error(`Error turning device with ID ${deviceId} on:`, error)
+        }
       }
       if (isThisMinute(interval.end)) {
-        await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
+        try {
+          await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
+        } catch (error) {
+          console.error(`Error turning device with ID ${deviceId} off:`, error)
+        }
       }
     }
 
@@ -129,9 +158,16 @@ export class IrrigationSchedulerService {
       const deviceIntervals = program.deviceIntervals!
       const areAllIntervalsCompleted = deviceIntervals.every((deviceInterval) => isPast(deviceInterval.interval.end))
       if (areAllIntervalsCompleted) {
-        await this.irrigationProgramsService.update(program.id, {
-          deviceIntervals: undefined,
-        } as UpdateIrrigationProgram)
+        try {
+          await this.irrigationProgramsService.update(program.id, {
+            deviceIntervals: undefined,
+          } as UpdateIrrigationProgram)
+        } catch (error) {
+          console.error(
+            `Error removing device intervals for irrigation program with name ${program.name} and ID ${program.id}:`,
+            error
+          )
+        }
       }
     }
   }
