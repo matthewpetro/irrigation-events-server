@@ -9,6 +9,6 @@ export interface IrrigationProgram {
   startTime: string
   deviceIds: DeviceId[]
   simultaneousIrrigation: boolean
-  nextRunDate?: string
-  deviceIntervals?: DeviceInterval[]
+  nextRunDate?: string | null
+  deviceIntervals?: DeviceInterval[] | null
 }
