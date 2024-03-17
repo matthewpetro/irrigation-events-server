@@ -9,7 +9,7 @@ export class IrrigationProgramEntity {
     public readonly startTime: string,
     public readonly deviceIds: DeviceId[],
     public readonly simultaneousIrrigation: boolean,
-    public readonly nextRunDate?: string,
-    public readonly deviceIntervals?: DeviceInterval[]
+    public readonly nextRunDate?: string | null,
+    public readonly deviceIntervals?: DeviceInterval[] | null
   ) {}
 }

@@ -34,5 +34,5 @@ export class CreateIrrigationProgramDto {
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   @IsOptional()
   @MinDate(startOfToday())
-  nextRunDate?: string
+  nextRunDate?: string | null
 }
