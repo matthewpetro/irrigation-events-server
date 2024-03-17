@@ -92,7 +92,7 @@ export class IrrigationSchedulerService {
   // When checking programs to see if they should run, look for intervals. If they
   // are stored in the database, that means the program is running. If there are no intervals,
   // then we need to see if the program should start now and calculate the intervals.
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE, { name: 'irrigation-scheduler', disabled: process.env.NODE_ENV === 'test' })
   async run() {
     let sunriseSunset: SunriseSunset
     let irrigationPrograms: IrrigationProgram[]
