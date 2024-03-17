@@ -6,22 +6,20 @@ import { IrrigationProgram } from './interfaces/irrigation-program.interface'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
 import { DatabaseService } from '@/database/database.service'
-import { DocumentScope, IdentifiedDocument, MaybeDocument, MaybeRevisionedDocument } from 'nano'
+import { DocumentScope, Document, MaybeDocument } from 'nano'
 
-type IrrigationProgramEntityWithId = IrrigationProgramEntity & IdentifiedDocument
+type IrrigationProgramDocument = IrrigationProgramEntity & Document
 
 const irrigationEntityToIrrigationInterface = (
-  irrigationProgramEntity: IrrigationProgramEntityWithId
-): IrrigationProgram => ({
-  id: irrigationProgramEntity._id,
-  name: irrigationProgramEntity.name,
-  duration: irrigationProgramEntity.duration,
-  wateringPeriod: irrigationProgramEntity.wateringPeriod,
-  startTime: irrigationProgramEntity.startTime,
-  deviceIds: irrigationProgramEntity.deviceIds,
-  simultaneousIrrigation: irrigationProgramEntity.simultaneousIrrigation,
-  nextRunDate: irrigationProgramEntity.nextRunDate,
-})
+  irrigationProgramEntity: IrrigationProgramDocument
+): IrrigationProgram => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { _id, _rev, ...rest } = irrigationProgramEntity
+  return {
+    id: _id,
+    ...rest,
+  }
+}
 
 @Injectable()
 export class IrrigationProgramsService implements OnModuleInit {
@@ -56,7 +54,7 @@ export class IrrigationProgramsService implements OnModuleInit {
   async findAll() {
     try {
       const result = await this.db.list({ include_docs: true })
-      return result.rows.map((row) => irrigationEntityToIrrigationInterface(row.doc! as IrrigationProgramEntityWithId))
+      return result.rows.map((row) => irrigationEntityToIrrigationInterface(row.doc! as IrrigationProgramDocument))
     } catch (error) {
       throw new HttpException('Failed to retrieve irrigation programs', HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -68,7 +66,7 @@ export class IrrigationProgramsService implements OnModuleInit {
       if (result._deleted) {
         throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
       }
-      return result as IrrigationProgramEntityWithId & MaybeRevisionedDocument
+      return result as IrrigationProgramDocument
     } catch (error) {
       if (error instanceof HttpException) {
         throw error
@@ -87,7 +85,7 @@ export class IrrigationProgramsService implements OnModuleInit {
 
   async update(id: string, updateIrrigationProgram: UpdateIrrigationProgram) {
     const currentDocument = await this.findIrrigationProgramById(id)
-    const newDocument: IrrigationProgramEntityWithId = {
+    const newDocument: IrrigationProgramDocument = {
       ...currentDocument,
       ...updateIrrigationProgram,
     }
