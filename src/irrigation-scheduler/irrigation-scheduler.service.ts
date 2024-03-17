@@ -25,14 +25,6 @@ import { DeviceState } from '@/enums/device-state.interface'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
 
-// When the start time of a program is reached, calculate the intervals for each device for the
-// whole program.
-// Save the intervals to the database and also update the next run date in the database.
-// This means that once a program starts running, no more changes can be made to the current run.
-// When all intervals are completed, delete all intervals from the database.
-// When checking programs to see if they should run, look for intervals. If they
-// are stored in the database, that means the program is running.
-
 function convertStartTimeToActualTime(startTime: string, sunriseSunset: SunriseSunset) {
   const sunriseSunsetRegex = /^(?<sunriseOrSunset>sunset|sunrise)(?<offset>[+-]?\d+)?$/
   const matches = startTime.match(sunriseSunsetRegex)
@@ -92,6 +84,14 @@ export class IrrigationSchedulerService {
     private sunriseSunsetService: SunriseSunsetService
   ) {}
 
+  // When the start time of a program is reached, calculate the intervals for each device for the
+  // whole program.
+  // Save the intervals to the database and also update the next run date in the database.
+  // This means that once a program starts running, no more changes can be made to the current run.
+  // When all intervals are completed, delete all intervals from the database.
+  // When checking programs to see if they should run, look for intervals. If they
+  // are stored in the database, that means the program is running. If there are no intervals,
+  // then we need to see if the program should start now and calculate the intervals.
   @Cron(CronExpression.EVERY_MINUTE)
   async run() {
     let sunriseSunset: SunriseSunset
