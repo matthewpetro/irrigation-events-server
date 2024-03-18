@@ -33,6 +33,8 @@ const irrigationEventsToDeviceEvents = (irrigationEvents: IrrigationEvent[]): De
   return deviceEvents
 }
 
+// TODO: add error handling in this controller
+
 @Controller('irrigation-events')
 export class IrrigationEventsController {
   constructor(

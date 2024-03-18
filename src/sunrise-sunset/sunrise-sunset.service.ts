@@ -1,6 +1,6 @@
 import { DatabaseService } from '@/database/database.service'
 import EnvironmentVariables from '@/environment-variables'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DocumentScope } from 'nano'
 import axios, { AxiosInstance } from 'axios'
@@ -33,10 +33,13 @@ const dbDocumentsToSunriseSunsets = (documents: SunriseSunsetEntity[]) =>
     return accumulator
   }, new Map() as SunriseSunsets)
 
+// TODO: add error handling in this service
+
 @Injectable()
 export class SunriseSunsetService implements OnModuleInit {
   private axiosInstance: AxiosInstance
   private db: DocumentScope<SunriseSunsetEntity>
+  private readonly logger = new Logger(SunriseSunsetService.name)
 
   public constructor(
     private configService: ConfigService<EnvironmentVariables, true>,
@@ -81,7 +84,7 @@ export class SunriseSunsetService implements OnModuleInit {
         // We don't need to wait for the insert to complete, so we don't await it.
         // If it fails, log it and move on.
         this.insertSunriseSunset(sunriseSunsetToDbDocument(sunriseSunsetResponse)).catch((e) => {
-          console.error(e, `Failed to insert sunrise/sunset for ${dateString}`)
+          this.logger.error(e, `Failed to insert sunrise/sunset for ${dateString}`)
         })
       }
     }

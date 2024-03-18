@@ -12,6 +12,8 @@ interface MakerDeviceDetails {
   }
 }
 
+// TODO: add error handling in this service
+
 @Injectable()
 export class MakerApiService implements OnModuleInit {
   private axiosInstance: AxiosInstance

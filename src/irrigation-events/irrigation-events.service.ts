@@ -25,6 +25,8 @@ const dbDocumentToIrrigationEvent = ({ _id, deviceName, deviceId, state }: Irrig
     state: state,
   }) as IrrigationEvent
 
+// TODO: add error handling in this service
+
 @Injectable()
 export class IrrigationEventsService implements OnModuleInit {
   private db: DocumentScope<IrrigationEventDocument>
