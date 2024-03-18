@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, OnModuleInit } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { v4 as uuidv4 } from 'uuid'
 import type { CreateIrrigationProgram, UpdateIrrigationProgram } from './types'
 import { IrrigationProgramEntity } from './entities/irrigation-program.entity'
@@ -23,6 +23,7 @@ const irrigationEntityToIrrigationInterface = (
 
 @Injectable()
 export class IrrigationProgramsService implements OnModuleInit {
+  private readonly logger = new Logger(IrrigationProgramsService.name)
   private db: DocumentScope<IrrigationProgramEntity & MaybeDocument>
 
   public constructor(
@@ -40,6 +41,7 @@ export class IrrigationProgramsService implements OnModuleInit {
     try {
       const result = await this.db.insert(createIrrigationProgram as IrrigationProgramEntity, uuidv4())
       if (!result.ok) {
+        this.logger.error('Failed to create irrigation program', result)
         throw new HttpException('Failed to create irrigation program', HttpStatus.INTERNAL_SERVER_ERROR)
       }
       return { id: result.id, ...createIrrigationProgram } as IrrigationProgram
@@ -47,6 +49,7 @@ export class IrrigationProgramsService implements OnModuleInit {
       if (error instanceof HttpException) {
         throw error
       }
+      this.logger.error('Failed to create irrigation program', error)
       throw new HttpException('Failed to create irrigation program', HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
@@ -56,6 +59,7 @@ export class IrrigationProgramsService implements OnModuleInit {
       const result = await this.db.list({ include_docs: true })
       return result.rows.map((row) => irrigationEntityToIrrigationInterface(row.doc! as IrrigationProgramDocument))
     } catch (error) {
+      this.logger.error('Failed to retrieve irrigation programs', error)
       throw new HttpException('Failed to retrieve irrigation programs', HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
@@ -64,6 +68,7 @@ export class IrrigationProgramsService implements OnModuleInit {
     try {
       const result = await this.db.get(id)
       if (result._deleted) {
+        this.logger.error(`Irrigation program with ID ${id} not found`)
         throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
       }
       return result as IrrigationProgramDocument
@@ -72,8 +77,10 @@ export class IrrigationProgramsService implements OnModuleInit {
         throw error
       }
       if (error.statusCode === 404) {
+        this.logger.error(`Irrigation program with ID ${id} not found`)
         throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
       }
+      this.logger.error(`Failed to retrieve irrigation program with ID ${id}`, error)
       throw new HttpException(`Failed to retrieve irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
@@ -92,14 +99,16 @@ export class IrrigationProgramsService implements OnModuleInit {
     try {
       const result = await this.db.insert(newDocument)
       if (!result.ok) {
+        this.logger.error(`Failed to update irrigation program with ID ${id}`, result)
         throw new HttpException(`Failed to update irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
       }
       return irrigationEntityToIrrigationInterface(newDocument)
     } catch (error) {
-      if (!(error instanceof HttpException)) {
-        throw new HttpException(`Failed to update irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
+      if (error instanceof HttpException) {
+        throw error
       }
-      throw error
+      this.logger.error(`Failed to update irrigation program with ID ${id}`, error)
+      throw new HttpException(`Failed to update irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -117,8 +126,10 @@ export class IrrigationProgramsService implements OnModuleInit {
         throw error
       }
       if (error.statusCode === 404) {
+        this.logger.error(`Irrigation program with ID ${id} not found`)
         throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
       } else {
+        this.logger.error(`Failed to delete irrigation program with ID ${id}`, error)
         throw new HttpException(`Failed to delete irrigation program with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR)
       }
     }

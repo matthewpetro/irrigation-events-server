@@ -1,7 +1,7 @@
 import { IrrigationProgramsService } from '@/irrigation-programs/irrigation-programs.service'
 import { MakerApiService } from '@/maker-api/maker-api.service'
 import { SunriseSunset } from '@/sunrise-sunset/interfaces/sunrise-sunset.interface'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
 import { IrrigationProgram } from '@/irrigation-programs/interfaces/irrigation-program.interface'
@@ -77,6 +77,7 @@ const isProgramRunning = ({ deviceIntervals }: IrrigationProgram) => !!deviceInt
 
 @Injectable()
 export class IrrigationSchedulerService {
+  private readonly logger = new Logger(IrrigationSchedulerService.name)
   public constructor(
     private configService: ConfigService<EnvironmentVariables, true>,
     private irrigationProgramsService: IrrigationProgramsService,
@@ -94,18 +95,19 @@ export class IrrigationSchedulerService {
   // then we need to see if the program should start now and calculate the intervals.
   @Cron(CronExpression.EVERY_MINUTE, { name: 'irrigation-scheduler', disabled: process.env.NODE_ENV === 'test' })
   async run() {
+    this.logger.log('Running irrigation scheduler')
     let sunriseSunset: SunriseSunset
     let irrigationPrograms: IrrigationProgram[]
     try {
       sunriseSunset = await this.sunriseSunsetService.getSunriseSunset(new Date())
     } catch (error) {
-      console.error('Error getting sunrise and sunset for today:', error)
+      this.logger.error('Error getting sunrise and sunset for today:', error)
       return
     }
     try {
       irrigationPrograms = await this.irrigationProgramsService.findAll()
     } catch (error) {
-      console.error('Error getting irrigation programs:', error)
+      this.logger.error('Error getting irrigation programs:', error)
       return
     }
     const currentlyRunningPrograms = irrigationPrograms.filter(isProgramRunning)
@@ -127,7 +129,7 @@ export class IrrigationSchedulerService {
         currentlyRunningDeviceIntervals.push(...deviceIntervals)
         currentlyRunningPrograms.push(updatedProgram)
       } catch (error) {
-        console.error(
+        this.logger.error(
           `Error setting device intervals and next run date for irrigation program with name ${program.name} and ID ${program.id}:`,
           error
         )
@@ -143,7 +145,7 @@ export class IrrigationSchedulerService {
           await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
           await new Promise((resolve) => setTimeout(resolve, meteringInterval))
         } catch (error) {
-          console.error(`Error turning device with ID ${deviceId} on:`, error)
+          this.logger.error(`Error turning device with ID ${deviceId} on:`, error)
         }
       }
       if (isThisMinute(interval.end)) {
@@ -151,7 +153,7 @@ export class IrrigationSchedulerService {
           await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
           await new Promise((resolve) => setTimeout(resolve, meteringInterval))
         } catch (error) {
-          console.error(`Error turning device with ID ${deviceId} off:`, error)
+          this.logger.error(`Error turning device with ID ${deviceId} off:`, error)
         }
       }
     }
@@ -166,7 +168,7 @@ export class IrrigationSchedulerService {
             deviceIntervals: null,
           } as UpdateIrrigationProgram)
         } catch (error) {
-          console.error(
+          this.logger.error(
             `Error removing device intervals for irrigation program with name ${program.name} and ID ${program.id}:`,
             error
           )
