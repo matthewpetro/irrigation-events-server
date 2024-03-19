@@ -71,7 +71,7 @@ const shouldProgramRunToday = ({ nextRunDate }: IrrigationProgram) =>
   !nextRunDate || isToday(parseISO(nextRunDate)) || isBefore(parseISO(nextRunDate), startOfToday())
 
 const isProgramStartTime = (program: IrrigationProgram, sunriseSunset: SunriseSunset) =>
-  !isProgramRunning(program) && isThisMinute(convertStartTimeToActualTime(program.startTime, sunriseSunset))
+  isThisMinute(convertStartTimeToActualTime(program.startTime, sunriseSunset))
 
 const isProgramRunning = ({ deviceIntervals }: IrrigationProgram) => !!deviceIntervals
 
@@ -115,7 +115,8 @@ export class IrrigationSchedulerService {
 
     // Get all programs that should start now and calculate the intervals for each device
     const programsToStart = irrigationPrograms.filter(
-      (program) => shouldProgramRunToday(program) && isProgramStartTime(program, sunriseSunset)
+      (program) =>
+        !isProgramRunning(program) && shouldProgramRunToday(program) && isProgramStartTime(program, sunriseSunset)
     )
     for (const program of programsToStart) {
       const actualStartTime = convertStartTimeToActualTime(program.startTime, sunriseSunset)
