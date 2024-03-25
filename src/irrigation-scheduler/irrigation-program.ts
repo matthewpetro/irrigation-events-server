@@ -38,7 +38,7 @@ export class IrrigationProgram implements IrrigationProgramInterface {
       // based on the sunrise or sunset and offset.
       const { sunriseOrSunset, offset } = matches.groups!
       const realTimeOfDay = this.sunriseSunset[sunriseOrSunset] as Date
-      actualStartTime = addMinutes(realTimeOfDay, parseInt(offset))
+      actualStartTime = offset ? addMinutes(realTimeOfDay, parseInt(offset)) : realTimeOfDay
     } else {
       // Otherwise, we just need to turn the start time into a Date object
       const [hours, minutes] = this.startTime.split(':')

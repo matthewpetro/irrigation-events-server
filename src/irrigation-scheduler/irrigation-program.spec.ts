@@ -44,6 +44,13 @@ describe('IrrigationProgram', () => {
         set(Date.now(), { hours: 16, minutes: 45, seconds: 0, milliseconds: 0 })
       )
     })
+
+    it('should return the start time as a Date object with no offset', () => {
+      irrigationProgram.startTime = 'sunrise'
+      expect(irrigationProgram.getActualStartTime()).toEqual(
+        set(Date.now(), { hours: 6, minutes: 0, seconds: 0, milliseconds: 0 })
+      )
+    })
   })
 
   describe('shouldProgramRunToday', () => {
