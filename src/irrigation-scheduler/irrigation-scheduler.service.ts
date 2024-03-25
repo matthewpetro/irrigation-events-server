@@ -97,7 +97,7 @@ export class IrrigationSchedulerService {
     }
 
     // Check all intervals and turn devices on or off as needed
-    const meteringInterval = this.configService.get<number>('SWITCH_METERING_INTERVAL', { infer: true }) ?? 500
+    const meteringInterval = this.configService.get<number>('SWITCH_METERING_INTERVAL', 500, { infer: true })
     for (const program of currentlyRunningPrograms) {
       for (const deviceInterval of program.deviceIntervals!) {
         const { deviceId, interval } = deviceInterval
