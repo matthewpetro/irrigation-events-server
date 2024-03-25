@@ -4,47 +4,17 @@ import { SunriseSunset } from '@/sunrise-sunset/interfaces/sunrise-sunset.interf
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
-import { IrrigationProgram } from '@/irrigation-programs/interfaces/irrigation-program.interface'
+import { IrrigationProgram } from './irrigation-program'
 import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval.interface'
-import {
-  addDays,
-  addMinutes,
-  format,
-  interval,
-  isBefore,
-  isPast,
-  isThisMinute,
-  isToday,
-  parseISO,
-  set,
-  startOfMinute,
-  startOfToday,
-} from 'date-fns'
+import { addDays, addMinutes, format, interval, isPast, isThisMinute } from 'date-fns'
 import type { UpdateIrrigationProgram } from '@/irrigation-programs/types'
 import { DeviceState } from '@/enums/device-state.interface'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
 
-function convertStartTimeToActualTime(startTime: string, sunriseSunset: SunriseSunset) {
-  const sunriseSunsetRegex = /^(?<sunriseOrSunset>sunset|sunrise)(?<offset>[+-]?\d+)?$/
-  const matches = startTime.match(sunriseSunsetRegex)
-  let actualStartTime: Date
-  if (matches) {
-    // If the start time is a sunrise or sunset, then we need to determine the actual time
-    // based on the sunrise or sunset and offset.
-    const { sunriseOrSunset, offset } = matches.groups!
-    const realTimeOfDay = sunriseSunset[sunriseOrSunset] as Date
-    actualStartTime = addMinutes(realTimeOfDay, parseInt(offset))
-  } else {
-    // Otherwise, we just need to turn the start time into a Date object
-    const [hours, minutes] = startTime.split(':')
-    actualStartTime = set(Date.now(), { hours: parseInt(hours), minutes: parseInt(minutes) })
-  }
-  return startOfMinute(actualStartTime)
-}
-
-function calculateDeviceIntervals(irrigationProgram: IrrigationProgram, actualStartTime: Date): DeviceInterval[] {
+function calculateDeviceIntervals(irrigationProgram: IrrigationProgram): DeviceInterval[] {
   const { deviceIds, simultaneousIrrigation, duration } = irrigationProgram
+  const actualStartTime = irrigationProgram.getActualStartTime()
   let deviceIntervals: DeviceInterval[]
 
   if (simultaneousIrrigation) {
@@ -62,18 +32,9 @@ function calculateDeviceIntervals(irrigationProgram: IrrigationProgram, actualSt
   return deviceIntervals
 }
 
-const calculateNextRunDate = ({ wateringPeriod }: IrrigationProgram) =>
-  format(addDays(Date.now(), wateringPeriod), 'yyyy-MM-dd')
-
-// A program should run today if it has no next run date, or if the next run date is today or in the past.
-// Next run dates in the past shouldn't happen, but in case of a bug or weird edge case, this will handle it.
-const shouldProgramRunToday = ({ nextRunDate }: IrrigationProgram) =>
-  !nextRunDate || isToday(parseISO(nextRunDate)) || isBefore(parseISO(nextRunDate), startOfToday())
-
-const isProgramStartTime = (program: IrrigationProgram, sunriseSunset: SunriseSunset) =>
-  isThisMinute(convertStartTimeToActualTime(program.startTime, sunriseSunset))
-
-const isProgramRunning = ({ deviceIntervals }: IrrigationProgram) => !!deviceIntervals
+function calculateNextRunDate({ wateringPeriod }: IrrigationProgram) {
+  return format(addDays(Date.now(), wateringPeriod), 'yyyy-MM-dd')
+}
 
 @Injectable()
 export class IrrigationSchedulerService {
@@ -105,30 +66,28 @@ export class IrrigationSchedulerService {
       return
     }
     try {
-      irrigationPrograms = await this.irrigationProgramsService.findAll()
+      const programs = await this.irrigationProgramsService.findAll()
+      irrigationPrograms = programs.map((program) => new IrrigationProgram(program, sunriseSunset))
     } catch (error) {
       this.logger.error('Error getting irrigation programs:', error)
       return
     }
-    const currentlyRunningPrograms = irrigationPrograms.filter(isProgramRunning)
-    const currentlyRunningDeviceIntervals = currentlyRunningPrograms.flatMap((program) => program.deviceIntervals!)
+    const currentlyRunningPrograms = irrigationPrograms.filter((program) => program.isProgramRunning)
 
     // Get all programs that should start now and calculate the intervals for each device
     const programsToStart = irrigationPrograms.filter(
-      (program) =>
-        !isProgramRunning(program) && shouldProgramRunToday(program) && isProgramStartTime(program, sunriseSunset)
+      (program) => !program.isProgramRunning() && program.shouldProgramRunToday() && program.isProgramStartTime()
     )
     for (const program of programsToStart) {
-      const actualStartTime = convertStartTimeToActualTime(program.startTime, sunriseSunset)
-      const deviceIntervals = calculateDeviceIntervals(program, actualStartTime)
+      const deviceIntervals = calculateDeviceIntervals(program)
       const nextRunDate = calculateNextRunDate(program)
       try {
-        const updatedProgram = await this.irrigationProgramsService.update(program.id, {
+        await this.irrigationProgramsService.update(program.id, {
           deviceIntervals,
           nextRunDate,
         } as UpdateIrrigationProgram)
-        currentlyRunningDeviceIntervals.push(...deviceIntervals)
-        currentlyRunningPrograms.push(updatedProgram)
+        program.deviceIntervals = deviceIntervals
+        currentlyRunningPrograms.push(program)
       } catch (error) {
         this.logger.error(
           `Error setting device intervals and next run date for irrigation program with name ${program.name} and ID ${program.id}:`,
@@ -139,22 +98,24 @@ export class IrrigationSchedulerService {
 
     // Check all intervals and turn devices on or off as needed
     const meteringInterval = this.configService.get<number>('SWITCH_METERING_INTERVAL', { infer: true }) ?? 500
-    for (const deviceInterval of currentlyRunningDeviceIntervals) {
-      const { deviceId, interval } = deviceInterval
-      if (isThisMinute(interval.start)) {
-        try {
-          await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
-          await new Promise((resolve) => setTimeout(resolve, meteringInterval))
-        } catch (error) {
-          this.logger.error(`Error turning device with ID ${deviceId} on:`, error)
+    for (const program of currentlyRunningPrograms) {
+      for (const deviceInterval of program.deviceIntervals!) {
+        const { deviceId, interval } = deviceInterval
+        if (isThisMinute(interval.start)) {
+          try {
+            await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
+            await new Promise((resolve) => setTimeout(resolve, meteringInterval))
+          } catch (error) {
+            this.logger.error(`Error turning device with ID ${deviceId} on:`, error)
+          }
         }
-      }
-      if (isThisMinute(interval.end)) {
-        try {
-          await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
-          await new Promise((resolve) => setTimeout(resolve, meteringInterval))
-        } catch (error) {
-          this.logger.error(`Error turning device with ID ${deviceId} off:`, error)
+        if (isThisMinute(interval.end)) {
+          try {
+            await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
+            await new Promise((resolve) => setTimeout(resolve, meteringInterval))
+          } catch (error) {
+            this.logger.error(`Error turning device with ID ${deviceId} off:`, error)
+          }
         }
       }
     }
