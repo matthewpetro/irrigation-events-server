@@ -6,7 +6,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
 import { IrrigationProgram } from './irrigation-program'
 import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval.interface'
-import { addDays, addMinutes, format, interval, isPast, isThisMinute } from 'date-fns'
+import { addDays, addMinutes, format, interval, isThisMinute } from 'date-fns'
 import type { UpdateIrrigationProgram } from '@/irrigation-programs/types'
 import { DeviceState } from '@/enums/device-state.interface'
 import { ConfigService } from '@nestjs/config'
@@ -72,8 +72,7 @@ export class IrrigationSchedulerService {
       this.logger.error('Error getting irrigation programs:', error)
       return
     }
-    const currentlyRunningPrograms = irrigationPrograms.filter((program) => program.isProgramRunning)
-
+    const currentlyRunningPrograms = irrigationPrograms.filter((program) => program.isProgramRunning())
     // Get all programs that should start now and calculate the intervals for each device
     const programsToStart = irrigationPrograms.filter(
       (program) => !program.isProgramRunning() && program.shouldProgramRunToday() && program.isProgramStartTime()
@@ -122,9 +121,7 @@ export class IrrigationSchedulerService {
 
     // Check if any programs have completed and remove the intervals from the database
     for (const program of currentlyRunningPrograms) {
-      const deviceIntervals = program.deviceIntervals!
-      const areAllIntervalsCompleted = deviceIntervals.every((deviceInterval) => isPast(deviceInterval.interval.end))
-      if (areAllIntervalsCompleted) {
+      if (program.areAllIntervalsCompleted()) {
         try {
           await this.irrigationProgramsService.update(program.id, {
             deviceIntervals: null,
