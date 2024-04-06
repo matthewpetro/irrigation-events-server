@@ -2,7 +2,18 @@ import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval
 import { IrrigationProgram as IrrigationProgramInterface } from '@/irrigation-programs/interfaces/irrigation-program.interface'
 import { SunriseSunset } from '@/sunrise-sunset/interfaces/sunrise-sunset.interface'
 import { DeviceId } from '@/types'
-import { addMinutes, isBefore, isThisMinute, isToday, parseISO, set, startOfMinute, startOfToday } from 'date-fns'
+import {
+  addMinutes,
+  isBefore,
+  isEqual,
+  isPast,
+  isThisMinute,
+  isToday,
+  parseISO,
+  set,
+  startOfMinute,
+  startOfToday,
+} from 'date-fns'
 
 export class IrrigationProgram implements IrrigationProgramInterface {
   id: string
@@ -61,5 +72,13 @@ export class IrrigationProgram implements IrrigationProgramInterface {
 
   isProgramRunning() {
     return !!this.deviceIntervals
+  }
+
+  areAllIntervalsCompleted() {
+    if (!this.deviceIntervals) {
+      return false
+    }
+    const lastInterval = this.deviceIntervals[this.deviceIntervals.length - 1]
+    return isPast(lastInterval.interval.end) || isEqual(lastInterval.interval.end, Date.now())
   }
 }
