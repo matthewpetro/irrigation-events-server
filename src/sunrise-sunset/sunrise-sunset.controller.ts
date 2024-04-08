@@ -3,6 +3,7 @@ import { IsISO8601 } from 'class-validator'
 import { SunriseSunsetService } from './sunrise-sunset.service'
 import { parseISO } from 'date-fns'
 
+// TODO: Remove this controller when no longer needed for testing purposes
 class QueryParameters {
   @IsISO8601()
   startDate: string
