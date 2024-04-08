@@ -20,7 +20,7 @@ export class IrrigationProgram implements IrrigationProgramInterface {
   name: string
   duration: number
   wateringPeriod: number
-  startTime: string
+  startTimes: string[]
   deviceIds: DeviceId[]
   simultaneousIrrigation: boolean
   nextRunDate?: string | null
@@ -32,17 +32,17 @@ export class IrrigationProgram implements IrrigationProgramInterface {
     this.name = irrigationProgram.name
     this.duration = irrigationProgram.duration
     this.wateringPeriod = irrigationProgram.wateringPeriod
-    this.startTime = irrigationProgram.startTime
-    this.deviceIds = irrigationProgram.deviceIds
+    this.startTimes = [...irrigationProgram.startTimes]
+    this.deviceIds = [...irrigationProgram.deviceIds]
     this.simultaneousIrrigation = irrigationProgram.simultaneousIrrigation
     this.nextRunDate = irrigationProgram.nextRunDate
-    this.deviceIntervals = irrigationProgram.deviceIntervals
+    this.deviceIntervals = irrigationProgram.deviceIntervals ? [...irrigationProgram.deviceIntervals] : null
     this.sunriseSunset = sunriseSunset
   }
 
-  getActualStartTime() {
+  private getActualStartTime(startTime: string) {
     const sunriseSunsetRegex = /^(?<sunriseOrSunset>sunset|sunrise)(?<offset>[+-]?\d+)?$/
-    const matches = this.startTime.match(sunriseSunsetRegex)
+    const matches = startTime.match(sunriseSunsetRegex)
     let actualStartTime: Date
     if (matches) {
       // If the start time is a sunrise or sunset, then we need to determine the actual time
@@ -52,10 +52,16 @@ export class IrrigationProgram implements IrrigationProgramInterface {
       actualStartTime = offset ? addMinutes(realTimeOfDay, parseInt(offset)) : realTimeOfDay
     } else {
       // Otherwise, we just need to turn the start time into a Date object
-      const [hours, minutes] = this.startTime.split(':')
+      const [hours, minutes] = startTime.split(':')
       actualStartTime = set(Date.now(), { hours: parseInt(hours), minutes: parseInt(minutes) })
     }
     return startOfMinute(actualStartTime)
+  }
+
+  getActualStartTimes() {
+    return this.startTimes
+      .map((startTime) => this.getActualStartTime(startTime))
+      .sort((a, b) => a.getTime() - b.getTime())
   }
 
   // A program should run today if it has no next run date, or if the next run date is today or in the past.
@@ -67,7 +73,7 @@ export class IrrigationProgram implements IrrigationProgramInterface {
   }
 
   isProgramStartTime() {
-    return isThisMinute(this.getActualStartTime())
+    return isThisMinute(this.getActualStartTimes()[0])
   }
 
   isProgramRunning() {

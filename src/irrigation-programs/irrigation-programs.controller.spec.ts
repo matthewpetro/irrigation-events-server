@@ -16,7 +16,7 @@ const mockIrrigationProgramsService = {
 const mockCreateDto = {
   duration: 10,
   wateringPeriod: 2,
-  startTime: '12:00:00',
+  startTimes: ['12:00'],
   deviceIds: [1, 2],
   simultaneousIrrigation: true,
 } as CreateIrrigationProgramDto

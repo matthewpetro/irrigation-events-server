@@ -14,22 +14,20 @@ import EnvironmentVariables from '@/environment-variables'
 
 function calculateDeviceIntervals(irrigationProgram: IrrigationProgram): DeviceInterval[] {
   const { deviceIds, simultaneousIrrigation, duration } = irrigationProgram
-  const actualStartTime = irrigationProgram.getActualStartTime()
-  let deviceIntervals: DeviceInterval[]
-
-  if (simultaneousIrrigation) {
-    const irrigationInterval = interval(actualStartTime, addMinutes(actualStartTime, duration))
-    deviceIntervals = deviceIds.map((deviceId) => ({ deviceId, interval: irrigationInterval }))
-  } else {
-    deviceIntervals = deviceIds.map((deviceId, deviceIndex) => {
-      const irrigationInterval = interval(
-        addMinutes(actualStartTime, duration * deviceIndex),
-        addMinutes(actualStartTime, duration * deviceIndex + duration)
-      )
-      return { deviceId, interval: irrigationInterval }
-    })
-  }
-  return deviceIntervals
+  return irrigationProgram.getActualStartTimes().flatMap((actualStartTime) => {
+    if (simultaneousIrrigation) {
+      const irrigationInterval = interval(actualStartTime, addMinutes(actualStartTime, duration))
+      return deviceIds.map((deviceId) => ({ deviceId, interval: irrigationInterval }) as DeviceInterval)
+    } else {
+      return deviceIds.map((deviceId, deviceIndex) => {
+        const irrigationInterval = interval(
+          addMinutes(actualStartTime, duration * deviceIndex),
+          addMinutes(actualStartTime, duration * deviceIndex + duration)
+        )
+        return { deviceId, interval: irrigationInterval } as DeviceInterval
+      })
+    }
+  })
 }
 
 function calculateNextRunDate({ wateringPeriod }: IrrigationProgram) {
@@ -105,7 +103,7 @@ export class IrrigationSchedulerService {
             await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
             await new Promise((resolve) => setTimeout(resolve, meteringInterval))
           } catch (error) {
-            this.logger.error(`Error turning device with ID ${deviceId} on:`, error)
+            this.logger.error(`Error turning on device with ID ${deviceId}:`, error)
           }
         }
         if (isThisMinute(interval.end)) {
@@ -113,7 +111,7 @@ export class IrrigationSchedulerService {
             await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
             await new Promise((resolve) => setTimeout(resolve, meteringInterval))
           } catch (error) {
-            this.logger.error(`Error turning device with ID ${deviceId} off:`, error)
+            this.logger.error(`Error turning off device with ID ${deviceId}:`, error)
           }
         }
       }

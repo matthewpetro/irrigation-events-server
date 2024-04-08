@@ -20,8 +20,8 @@ export class CreateIrrigationProgramDto {
   //   22:15
   //   sunrise+60
   //   sunset-30
-  @Matches(/^(?:[01]\d|2[0-3]):(?:[0-5]\d)$|^(?:sunset|sunrise)(?:[+-]?\d+)?$/)
-  startTime: string
+  @Matches(/^(?:[01]\d|2[0-3]):(?:[0-5]\d)$|^(?:sunset|sunrise)(?:[+-]?\d+)?$/, { each: true })
+  startTimes: string[]
 
   @IsInt({ each: true })
   @IsPositive({ each: true })

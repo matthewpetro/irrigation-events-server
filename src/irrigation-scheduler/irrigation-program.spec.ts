@@ -1,7 +1,7 @@
 import { set, format, subDays, addDays, addHours, interval, addMinutes } from 'date-fns'
 import { IrrigationProgram } from './irrigation-program'
 
-const referenceDate = new Date('2024-01-01T12:00:00.000Z')
+const referenceDate = new Date('2024-01-01T12:00:00.000')
 jest.useFakeTimers()
 jest.setSystemTime(referenceDate)
 
@@ -15,7 +15,7 @@ describe('IrrigationProgram', () => {
         name: 'Test Program',
         duration: 15,
         wateringPeriod: 2,
-        startTime: '07:00',
+        startTimes: ['07:00'],
         deviceIds: [1],
         simultaneousIrrigation: false,
         nextRunDate: null,
@@ -29,31 +29,40 @@ describe('IrrigationProgram', () => {
   })
 
   describe('getActualStartTime', () => {
-    it('should return the start time as a Date object', () => {
-      expect(irrigationProgram.getActualStartTime()).toEqual(
-        set(referenceDate, { hours: 7, minutes: 0, seconds: 0, milliseconds: 0 })
-      )
+    it('should return the start times as Date objects', () => {
+      expect(irrigationProgram.getActualStartTimes()).toEqual([
+        set(referenceDate, { hours: 7, minutes: 0, seconds: 0, milliseconds: 0 }),
+      ])
     })
 
     it('should return the start time as a Date object with an offset', () => {
-      irrigationProgram.startTime = 'sunrise+30'
-      expect(irrigationProgram.getActualStartTime()).toEqual(
-        set(referenceDate, { hours: 6, minutes: 30, seconds: 0, milliseconds: 0 })
-      )
+      irrigationProgram.startTimes = ['sunrise+30']
+      expect(irrigationProgram.getActualStartTimes()).toEqual([
+        set(referenceDate, { hours: 6, minutes: 30, seconds: 0, milliseconds: 0 }),
+      ])
     })
 
     it('should return the start time as a Date object with a positive offset', () => {
-      irrigationProgram.startTime = 'sunset-15'
-      expect(irrigationProgram.getActualStartTime()).toEqual(
-        set(referenceDate, { hours: 16, minutes: 45, seconds: 0, milliseconds: 0 })
-      )
+      irrigationProgram.startTimes = ['sunset-15']
+      expect(irrigationProgram.getActualStartTimes()).toEqual([
+        set(referenceDate, { hours: 16, minutes: 45, seconds: 0, milliseconds: 0 }),
+      ])
     })
 
     it('should return the start time as a Date object with no offset', () => {
-      irrigationProgram.startTime = 'sunrise'
-      expect(irrigationProgram.getActualStartTime()).toEqual(
-        set(referenceDate, { hours: 6, minutes: 0, seconds: 0, milliseconds: 0 })
-      )
+      irrigationProgram.startTimes = ['sunrise']
+      expect(irrigationProgram.getActualStartTimes()).toEqual([
+        set(referenceDate, { hours: 6, minutes: 0, seconds: 0, milliseconds: 0 }),
+      ])
+    })
+
+    it('should return a correctly sorted list of start times', () => {
+      irrigationProgram.startTimes = ['sunrise-15', '07:00', '04:00']
+      expect(irrigationProgram.getActualStartTimes()).toEqual([
+        set(referenceDate, { hours: 4, minutes: 0, seconds: 0, milliseconds: 0 }),
+        set(referenceDate, { hours: 5, minutes: 45, seconds: 0, milliseconds: 0 }),
+        set(referenceDate, { hours: 7, minutes: 0, seconds: 0, milliseconds: 0 }),
+      ])
     })
   })
 
@@ -80,14 +89,19 @@ describe('IrrigationProgram', () => {
   })
 
   describe('isProgramStartTime', () => {
-    it('should return true if the current time is the start time', () => {
-      irrigationProgram.startTime = format(referenceDate, 'HH:mm')
+    it('should return true if the current time is equal to the start time', () => {
+      irrigationProgram.startTimes = [format(referenceDate, 'HH:mm')]
       expect(irrigationProgram.isProgramStartTime()).toBe(true)
     })
 
-    it('should return false if the current time is not the start time', () => {
-      irrigationProgram.startTime = format(addHours(referenceDate, 1), 'HH:mm')
+    it('should return false if the current time is not equal to the start time', () => {
+      irrigationProgram.startTimes = [format(addHours(referenceDate, 1), 'HH:mm')]
       expect(irrigationProgram.isProgramStartTime()).toBe(false)
+    })
+
+    it('should return true if the current time is equal to the earliest start time', () => {
+      irrigationProgram.startTimes = [format(addMinutes(referenceDate, 30), 'HH:mm'), format(referenceDate, 'HH:mm')]
+      expect(irrigationProgram.isProgramStartTime()).toBe(true)
     })
   })
 

@@ -15,6 +15,8 @@ import {
   multipleDevicesSimultaneousRunningMock,
   multipleDevicesSequentialMock,
   multipleDevicesSequentialRunningMock,
+  multipleDevicesMultipleStartTimesMock,
+  multipleDevicesMultipleStartTimesRunningMock,
 } from './mocks/irrigation-programs.mocks'
 
 jest.useFakeTimers({ doNotFake: ['setTimeout'] })
@@ -184,6 +186,69 @@ describe('IrrigationSchedulerService', () => {
       expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('3', {
+        deviceIntervals: null,
+      })
+      expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(2, DeviceState.OFF)
+    })
+  })
+
+  describe('program with multiple devices and multiple start times', () => {
+    it('should start the program at the start time', async () => {
+      jest.setSystemTime(set(referenceDate, { hours: 7, minutes: 0 }))
+      mockIrrigationProgramsService.findAll.mockResolvedValue([multipleDevicesMultipleStartTimesMock])
+      await service.run()
+      expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('4', {
+        nextRunDate: multipleDevicesMultipleStartTimesRunningMock.nextRunDate,
+        deviceIntervals: multipleDevicesMultipleStartTimesRunningMock.deviceIntervals,
+      })
+      expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(1, DeviceState.ON)
+    })
+    it('should do nothing in the middle of the run time', async () => {
+      jest.setSystemTime(set(referenceDate, { hours: 7, minutes: 7 }))
+      mockIrrigationProgramsService.findAll.mockResolvedValue([multipleDevicesMultipleStartTimesRunningMock])
+      await service.run()
+      expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.update).not.toHaveBeenCalled()
+      expect(mockMakerApiService.setDeviceState).not.toHaveBeenCalled()
+    })
+    it('should switch devices at the correct time', async () => {
+      jest.setSystemTime(set(referenceDate, { hours: 7, minutes: 15 }))
+      mockIrrigationProgramsService.findAll.mockResolvedValue([multipleDevicesMultipleStartTimesRunningMock])
+      await service.run()
+      expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.update).not.toHaveBeenCalled()
+      expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(1, DeviceState.OFF)
+      expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(2, DeviceState.ON)
+    })
+    it('should turn off devices and not stop the program at the end of the first run time', async () => {
+      jest.setSystemTime(set(referenceDate, { hours: 7, minutes: 30 }))
+      mockIrrigationProgramsService.findAll.mockResolvedValue([multipleDevicesMultipleStartTimesRunningMock])
+      await service.run()
+      expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.update).not.toHaveBeenCalled()
+      expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(2, DeviceState.OFF)
+    })
+    it('should turn on devices at the beginning of the second run time', async () => {
+      jest.setSystemTime(set(referenceDate, { hours: 10, minutes: 0 }))
+      mockIrrigationProgramsService.findAll.mockResolvedValue([multipleDevicesMultipleStartTimesRunningMock])
+      await service.run()
+      expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.update).not.toHaveBeenCalled()
+      expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(1, DeviceState.ON)
+    })
+    it('should stop the program at the end time', async () => {
+      jest.setSystemTime(set(referenceDate, { hours: 10, minutes: 30 }))
+      mockIrrigationProgramsService.findAll.mockResolvedValue([multipleDevicesMultipleStartTimesRunningMock])
+      await service.run()
+      expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('4', {
         deviceIntervals: null,
       })
       expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(2, DeviceState.OFF)

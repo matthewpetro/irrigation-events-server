@@ -6,7 +6,7 @@ export class IrrigationProgramEntity {
     public readonly name: string,
     public readonly duration: number,
     public readonly wateringPeriod: number,
-    public readonly startTime: string,
+    public readonly startTimes: string[],
     public readonly deviceIds: DeviceId[],
     public readonly simultaneousIrrigation: boolean,
     public readonly nextRunDate?: string | null,

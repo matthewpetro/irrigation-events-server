@@ -14,7 +14,7 @@ export const singleDeviceMock: IrrigationProgram = {
   name: 'Test Program 1',
   duration: 15,
   wateringPeriod: 2,
-  startTime: '07:00',
+  startTimes: ['07:00'],
   deviceIds: [1],
   simultaneousIrrigation: false,
 }
@@ -38,7 +38,7 @@ export const multipleDevicesSimultaneousMock: IrrigationProgram = {
   name: 'Test Program 2',
   duration: 15,
   wateringPeriod: 2,
-  startTime: '07:00',
+  startTimes: ['07:00'],
   deviceIds: [1, 2],
   simultaneousIrrigation: true,
 }
@@ -69,7 +69,7 @@ export const multipleDevicesSequentialMock: IrrigationProgram = {
   name: 'Test Program 3',
   duration: 15,
   wateringPeriod: 2,
-  startTime: '07:00',
+  startTimes: ['07:00'],
   deviceIds: [1, 2],
   simultaneousIrrigation: false,
 }
@@ -90,6 +90,51 @@ export const multipleDevicesSequentialRunningMock: IrrigationProgram = {
       interval: interval(
         startOfMinute(set(referenceDate, { hours: 7, minutes: 15 })),
         startOfMinute(set(referenceDate, { hours: 7, minutes: 30 }))
+      ),
+    },
+  ],
+}
+
+export const multipleDevicesMultipleStartTimesMock: IrrigationProgram = {
+  id: '4',
+  name: 'Test Program 4',
+  duration: 15,
+  wateringPeriod: 2,
+  startTimes: ['07:00', '10:00'],
+  deviceIds: [1, 2],
+  simultaneousIrrigation: false,
+}
+
+export const multipleDevicesMultipleStartTimesRunningMock: IrrigationProgram = {
+  ...multipleDevicesMultipleStartTimesMock,
+  nextRunDate: '2024-01-03',
+  deviceIntervals: [
+    {
+      deviceId: 1,
+      interval: interval(
+        startOfMinute(set(referenceDate, { hours: 7, minutes: 0 })),
+        startOfMinute(set(referenceDate, { hours: 7, minutes: 15 }))
+      ),
+    },
+    {
+      deviceId: 2,
+      interval: interval(
+        startOfMinute(set(referenceDate, { hours: 7, minutes: 15 })),
+        startOfMinute(set(referenceDate, { hours: 7, minutes: 30 }))
+      ),
+    },
+    {
+      deviceId: 1,
+      interval: interval(
+        startOfMinute(set(referenceDate, { hours: 10, minutes: 0 })),
+        startOfMinute(set(referenceDate, { hours: 10, minutes: 15 }))
+      ),
+    },
+    {
+      deviceId: 2,
+      interval: interval(
+        startOfMinute(set(referenceDate, { hours: 10, minutes: 15 })),
+        startOfMinute(set(referenceDate, { hours: 10, minutes: 30 }))
       ),
     },
   ],
