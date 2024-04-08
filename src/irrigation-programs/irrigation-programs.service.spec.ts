@@ -70,7 +70,7 @@ describe('IrrigationProgramsService', () => {
         name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
-        startTime: '12:00',
+        startTimes: ['12:00'],
         deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
@@ -88,7 +88,7 @@ describe('IrrigationProgramsService', () => {
         name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
-        startTime: '12:00',
+        startTimes: ['12:00'],
         deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
@@ -106,7 +106,7 @@ describe('IrrigationProgramsService', () => {
         name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
-        startTime: '12:00',
+        startTimes: ['12:00'],
         deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
@@ -125,7 +125,7 @@ describe('IrrigationProgramsService', () => {
         name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
-        startTime: '12:00',
+        startTimes: ['12:00'],
         deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
@@ -133,7 +133,7 @@ describe('IrrigationProgramsService', () => {
         name: 'Irrigation Program 2',
         duration: 20,
         wateringPeriod: 4,
-        startTime: '05:00',
+        startTimes: ['05:00'],
         deviceIds: [3],
         simultaneousIrrigation: false,
       }
@@ -176,7 +176,7 @@ describe('IrrigationProgramsService', () => {
         name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
-        startTime: '12:00',
+        startTimes: ['12:00'],
         deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
@@ -231,7 +231,7 @@ describe('IrrigationProgramsService', () => {
         name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
-        startTime: '12:00',
+        startTimes: ['12:00'],
         deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
@@ -306,7 +306,7 @@ describe('IrrigationProgramsService', () => {
         name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
-        startTime: '12:00',
+        startTimes: ['12:00'],
         deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
@@ -332,7 +332,7 @@ describe('IrrigationProgramsService', () => {
         name: 'Irrigation Program 1',
         duration: 10,
         wateringPeriod: 2,
-        startTime: '12:00',
+        startTimes: ['12:00'],
         deviceIds: [1, 2],
         simultaneousIrrigation: true,
       }
