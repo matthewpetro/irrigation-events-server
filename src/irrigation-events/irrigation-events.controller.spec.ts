@@ -4,19 +4,25 @@ import { MakerApiService } from '@/maker-api/maker-api.service'
 import { ViewmodelTransformService } from './viewmodel-transform.service'
 import { IrrigationEventsService } from './irrigation-events.service'
 import { ConfigModule } from '@nestjs/config'
-import { DeviceState } from '@/enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.enum'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import { parseISO } from 'date-fns'
 import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
 
+const mockIrrigationEventsService = {
+  insertIrrigationEvent: jest.fn(),
+  getIrrigationEvents: jest.fn(),
+  getEventsBeforeStart: jest.fn(),
+  getEventsAfterEnd: jest.fn(),
+}
+
+const mockMakerApiService = {
+  getAllDeviceStates: jest.fn(),
+}
+
 describe('IrrigationEventsController', () => {
   let controller: IrrigationEventsController
-  const mockInsertIrrigationEvent = jest.fn()
-  const mockGetIrrigationEvents = jest.fn()
-  const mockGetEventsBeforeStart = jest.fn()
-  const mockGetEventsAfterEnd = jest.fn()
-  const mockGetAllDeviceStates = jest.fn()
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,17 +32,10 @@ describe('IrrigationEventsController', () => {
     })
       .useMocker((token) => {
         if (token === IrrigationEventsService) {
-          return {
-            insertIrrigationEvent: mockInsertIrrigationEvent,
-            getIrrigationEvents: mockGetIrrigationEvents,
-            getEventsBeforeStart: mockGetEventsBeforeStart,
-            getEventsAfterEnd: mockGetEventsAfterEnd,
-          }
+          return mockIrrigationEventsService
         }
         if (token === MakerApiService) {
-          return {
-            getAllDeviceStates: mockGetAllDeviceStates,
-          }
+          return mockMakerApiService
         }
       })
       .compile()
@@ -60,11 +59,11 @@ describe('IrrigationEventsController', () => {
       value: DeviceState.ON,
     } as MakerApiEventDto
     await controller.create(makerApiEventDto)
-    expect(mockInsertIrrigationEvent).toHaveBeenCalledWith(makerApiEventDto)
+    expect(mockIrrigationEventsService.insertIrrigationEvent).toHaveBeenCalledWith(makerApiEventDto)
   })
 
   it('should return viewmodels', async () => {
-    mockGetIrrigationEvents.mockResolvedValue([
+    mockIrrigationEventsService.getIrrigationEvents.mockResolvedValue([
       {
         timestamp: parseISO('2024-01-01T10:00:00.000Z'),
         deviceName: 'Device 1',
@@ -93,7 +92,7 @@ describe('IrrigationEventsController', () => {
     const startTimestamp = '2024-01-01T00:00:00.000Z'
     const endTimestamp = '2024-01-02T00:00:00.000Z'
     const viewmodels = await controller.get({ startTimestamp, endTimestamp })
-    expect(mockGetIrrigationEvents).toHaveBeenCalledWith(startTimestamp, endTimestamp)
+    expect(mockIrrigationEventsService.getIrrigationEvents).toHaveBeenCalledWith(startTimestamp, endTimestamp)
     expect(viewmodels).toEqual([
       {
         startTimestamp: '2024-01-01T10:00:00.000Z',
@@ -111,7 +110,7 @@ describe('IrrigationEventsController', () => {
   })
 
   it('should get events before the start of the time range', async () => {
-    mockGetIrrigationEvents.mockResolvedValue([
+    mockIrrigationEventsService.getIrrigationEvents.mockResolvedValue([
       {
         timestamp: parseISO('2024-01-01T12:00:00.000Z'),
         deviceName: 'Device 42',
@@ -119,7 +118,7 @@ describe('IrrigationEventsController', () => {
         state: DeviceState.OFF,
       },
     ] as IrrigationEvent[])
-    mockGetEventsBeforeStart.mockResolvedValue([
+    mockIrrigationEventsService.getEventsBeforeStart.mockResolvedValue([
       {
         timestamp: parseISO('2024-01-01T11:00:00.000Z'),
         deviceName: 'Device 42',
@@ -130,8 +129,8 @@ describe('IrrigationEventsController', () => {
     const startTimestamp = '2024-01-01T11:30:00.000Z'
     const endTimestamp = '2024-01-02T00:00:00.000Z'
     const viewmodels = await controller.get({ startTimestamp, endTimestamp })
-    expect(mockGetIrrigationEvents).toHaveBeenCalledWith(startTimestamp, endTimestamp)
-    expect(mockGetEventsBeforeStart).toHaveBeenCalledWith(startTimestamp, 42)
+    expect(mockIrrigationEventsService.getIrrigationEvents).toHaveBeenCalledWith(startTimestamp, endTimestamp)
+    expect(mockIrrigationEventsService.getEventsBeforeStart).toHaveBeenCalledWith(startTimestamp, 42)
     expect(viewmodels).toEqual([
       {
         startTimestamp: '2024-01-01T11:00:00.000Z',
@@ -143,7 +142,7 @@ describe('IrrigationEventsController', () => {
   })
 
   it('should get events after the end of the time range', async () => {
-    mockGetIrrigationEvents.mockResolvedValue([
+    mockIrrigationEventsService.getIrrigationEvents.mockResolvedValue([
       {
         timestamp: parseISO('2024-01-01T11:00:00.000Z'),
         deviceName: 'Device 42',
@@ -151,7 +150,7 @@ describe('IrrigationEventsController', () => {
         state: DeviceState.ON,
       },
     ] as IrrigationEvent[])
-    mockGetEventsAfterEnd.mockResolvedValue([
+    mockIrrigationEventsService.getEventsAfterEnd.mockResolvedValue([
       {
         timestamp: parseISO('2024-01-01T12:00:00.000Z'),
         deviceName: 'Device 42',
@@ -162,8 +161,8 @@ describe('IrrigationEventsController', () => {
     const startTimestamp = '2024-01-01T00:00:00.000Z'
     const endTimestamp = '2024-01-02T11:30:00.000Z'
     const viewmodels = await controller.get({ startTimestamp, endTimestamp })
-    expect(mockGetIrrigationEvents).toHaveBeenCalledWith(startTimestamp, endTimestamp)
-    expect(mockGetEventsAfterEnd).toHaveBeenCalledWith(endTimestamp, 42)
+    expect(mockIrrigationEventsService.getIrrigationEvents).toHaveBeenCalledWith(startTimestamp, endTimestamp)
+    expect(mockIrrigationEventsService.getEventsAfterEnd).toHaveBeenCalledWith(endTimestamp, 42)
     expect(viewmodels).toEqual([
       {
         startTimestamp: '2024-01-01T11:00:00.000Z',
@@ -175,7 +174,7 @@ describe('IrrigationEventsController', () => {
   })
 
   it('should add current device states', async () => {
-    mockGetIrrigationEvents.mockResolvedValue([
+    mockIrrigationEventsService.getIrrigationEvents.mockResolvedValue([
       {
         timestamp: parseISO('2024-01-01T11:00:00.000Z'),
         deviceName: 'Device 42',
@@ -183,14 +182,14 @@ describe('IrrigationEventsController', () => {
         state: DeviceState.ON,
       },
     ] as IrrigationEvent[])
-    mockGetEventsAfterEnd.mockResolvedValue([])
-    mockGetAllDeviceStates.mockResolvedValue({ 42: DeviceState.ON })
+    mockIrrigationEventsService.getEventsAfterEnd.mockResolvedValue([])
+    mockMakerApiService.getAllDeviceStates.mockResolvedValue({ 42: DeviceState.ON })
     const dateSpy = jest.spyOn(Date, 'now').mockImplementation(() => new Date('2024-01-01T11:30:00.000Z').getTime())
     const startTimestamp = '2024-01-01T00:00:00.000Z'
     const endTimestamp = '2024-01-02T00:00:00.000Z'
     const viewmodels = await controller.get({ startTimestamp, endTimestamp })
-    expect(mockGetIrrigationEvents).toHaveBeenCalledWith(startTimestamp, endTimestamp)
-    expect(mockGetAllDeviceStates).toHaveBeenCalled()
+    expect(mockIrrigationEventsService.getIrrigationEvents).toHaveBeenCalledWith(startTimestamp, endTimestamp)
+    expect(mockMakerApiService.getAllDeviceStates).toHaveBeenCalled()
     expect(viewmodels).toEqual([
       {
         startTimestamp: '2024-01-01T11:00:00.000Z',
