@@ -1,4 +1,4 @@
-import { DeviceState } from '@/enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.enum'
 import { DeviceId } from '@/types'
 
 export interface DeviceStates {

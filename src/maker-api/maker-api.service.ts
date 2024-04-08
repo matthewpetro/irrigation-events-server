@@ -2,7 +2,7 @@ import EnvironmentVariables from '@/environment-variables'
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import axios, { AxiosInstance } from 'axios'
-import { DeviceState } from '@/enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.enum'
 import { DeviceStates } from './interfaces/device-states.interface'
 
 interface MakerDeviceDetails {

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { MakerApiService } from './maker-api.service'
 import { ConfigModule } from '@nestjs/config'
-import { DeviceState } from '@/enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.enum'
 import mockData from './mocks/maker-api.mocks.json'
 import axios from 'axios'
 

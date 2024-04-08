@@ -1,4 +1,4 @@
-import { DeviceState } from '@/enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.enum'
 
 export interface IrrigationEvent {
   timestamp: Date

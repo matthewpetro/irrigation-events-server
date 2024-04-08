@@ -5,7 +5,7 @@ import { IrrigationProgramsService } from '@/irrigation-programs/irrigation-prog
 import { MakerApiService } from '@/maker-api/maker-api.service'
 import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
 import { set } from 'date-fns'
-import { DeviceState } from '@/enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.enum'
 import {
   referenceDate,
   sunriseSunsetMock,

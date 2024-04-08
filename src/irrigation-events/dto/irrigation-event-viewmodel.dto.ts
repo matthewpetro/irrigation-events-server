@@ -1,4 +1,4 @@
-import { Warning } from '../enums/warning.interface'
+import { Warning } from '../enums/warning.enum'
 
 export interface IrrigationEventViewmodel {
   startTimestamp: string

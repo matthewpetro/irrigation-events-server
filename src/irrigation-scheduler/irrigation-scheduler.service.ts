@@ -8,7 +8,7 @@ import { IrrigationProgram } from './irrigation-program'
 import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval.interface'
 import { addDays, addMinutes, format, interval, isThisMinute } from 'date-fns'
 import type { UpdateIrrigationProgram } from '@/irrigation-programs/types'
-import { DeviceState } from '@/enums/device-state.interface'
+import { DeviceState } from '@/enums/device-state.enum'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
 
