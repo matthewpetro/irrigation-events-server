@@ -16,5 +16,12 @@ export default interface EnvironmentVariables {
   LATITUDE: number
   LONGITUDE: number
 
+  // Amount of time to wait after turning on a switch on or off before
+  // continuing to process switch changes
   SWITCH_METERING_INTERVAL: number
+
+  // The times to use for sunrise and sunset if the actual
+  // times cannot be retrieved from the database or API.
+  DEFAULT_SUNRISE_TIME: string
+  DEFAULT_SUNSET_TIME: string
 }
