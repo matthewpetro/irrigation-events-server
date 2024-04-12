@@ -94,6 +94,168 @@ describe('SunriseSunsetService', () => {
     expect(result).toEqual(mockResponse)
   })
 
+  it('should get all sunrise/sunset data from the API', async () => {
+    mockGet.mockImplementation((url: string, config: AxiosRequestConfig) => {
+      if (config.params.date === '2024-01-01') {
+        return Promise.resolve({
+          data: {
+            results: {
+              sunrise: '2024-01-01T07:00:00-07:00',
+              sunset: '2024-01-01T19:00:00-07:00',
+            },
+          },
+        })
+      }
+      if (config.params.date === '2024-01-02') {
+        return Promise.resolve({
+          data: {
+            results: {
+              sunrise: '2024-01-02T07:01:00-07:00',
+              sunset: '2024-01-02T19:01:00-07:00',
+            },
+          },
+        })
+      }
+      if (config.params.date === '2024-01-03') {
+        return Promise.resolve({
+          data: {
+            results: {
+              sunrise: '2024-01-03T07:02:00-07:00',
+              sunset: '2024-01-03T19:02:00-07:00',
+            },
+          },
+        })
+      }
+    })
+    const mockResponse: SunriseSunsets = new Map([
+      ['2024-01-01', { sunrise: parseISO('2024-01-01T07:00:00-07:00'), sunset: parseISO('2024-01-01T19:00:00-07:00') }],
+      ['2024-01-02', { sunrise: parseISO('2024-01-02T07:01:00-07:00'), sunset: parseISO('2024-01-02T19:01:00-07:00') }],
+      ['2024-01-03', { sunrise: parseISO('2024-01-03T07:02:00-07:00'), sunset: parseISO('2024-01-03T19:02:00-07:00') }],
+    ])
+    const mockStartDate = parseISO('2024-01-01')
+    const mockEndDate = parseISO('2024-01-03')
+    mockFind.mockResolvedValue({ docs: [] })
+    const result = await service.getSunriseSunsets(mockStartDate, mockEndDate)
+    expect(mockFind).toHaveBeenCalledWith({
+      selector: {
+        $and: [
+          {
+            _id: {
+              $gte: format(mockStartDate, 'yyyy-MM-dd'),
+            },
+          },
+          {
+            _id: {
+              $lte: format(mockEndDate, 'yyyy-MM-dd'),
+            },
+          },
+        ],
+      },
+      sort: [{ _id: 'asc' }],
+      limit: 10000,
+    })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-01' } })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-02' } })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-03' } })
+    expect(result).toEqual(mockResponse)
+  })
+
+  it('should get all sunrise/sunset data from the API if the database throws an error', async () => {
+    mockGet.mockImplementation((url: string, config: AxiosRequestConfig) => {
+      if (config.params.date === '2024-01-01') {
+        return Promise.resolve({
+          data: {
+            results: {
+              sunrise: '2024-01-01T07:00:00-07:00',
+              sunset: '2024-01-01T19:00:00-07:00',
+            },
+          },
+        })
+      }
+      if (config.params.date === '2024-01-02') {
+        return Promise.resolve({
+          data: {
+            results: {
+              sunrise: '2024-01-02T07:01:00-07:00',
+              sunset: '2024-01-02T19:01:00-07:00',
+            },
+          },
+        })
+      }
+      if (config.params.date === '2024-01-03') {
+        return Promise.resolve({
+          data: {
+            results: {
+              sunrise: '2024-01-03T07:02:00-07:00',
+              sunset: '2024-01-03T19:02:00-07:00',
+            },
+          },
+        })
+      }
+    })
+    const mockResponse: SunriseSunsets = new Map([
+      ['2024-01-01', { sunrise: parseISO('2024-01-01T07:00:00-07:00'), sunset: parseISO('2024-01-01T19:00:00-07:00') }],
+      ['2024-01-02', { sunrise: parseISO('2024-01-02T07:01:00-07:00'), sunset: parseISO('2024-01-02T19:01:00-07:00') }],
+      ['2024-01-03', { sunrise: parseISO('2024-01-03T07:02:00-07:00'), sunset: parseISO('2024-01-03T19:02:00-07:00') }],
+    ])
+    const mockStartDate = parseISO('2024-01-01')
+    const mockEndDate = parseISO('2024-01-03')
+    mockFind.mockRejectedValue(new Error('Database error'))
+    const result = await service.getSunriseSunsets(mockStartDate, mockEndDate)
+    expect(mockFind).toHaveBeenCalledWith({
+      selector: {
+        $and: [
+          {
+            _id: {
+              $gte: format(mockStartDate, 'yyyy-MM-dd'),
+            },
+          },
+          {
+            _id: {
+              $lte: format(mockEndDate, 'yyyy-MM-dd'),
+            },
+          },
+        ],
+      },
+      sort: [{ _id: 'asc' }],
+      limit: 10000,
+    })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-01' } })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-02' } })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-03' } })
+    expect(result).toEqual(mockResponse)
+  })
+
+  it('should return an empty map if data cannot be retrieved from the database or API', async () => {
+    mockFind.mockRejectedValue(new Error('Database error'))
+    mockGet.mockRejectedValue(new Error('API error'))
+    const mockStartDate = parseISO('2024-01-01')
+    const mockEndDate = parseISO('2024-01-03')
+    const result = await service.getSunriseSunsets(mockStartDate, mockEndDate)
+    expect(mockFind).toHaveBeenCalledWith({
+      selector: {
+        $and: [
+          {
+            _id: {
+              $gte: format(mockStartDate, 'yyyy-MM-dd'),
+            },
+          },
+          {
+            _id: {
+              $lte: format(mockEndDate, 'yyyy-MM-dd'),
+            },
+          },
+        ],
+      },
+      sort: [{ _id: 'asc' }],
+      limit: 10000,
+    })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-01' } })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-02' } })
+    expect(mockGet).toHaveBeenCalledWith('', { params: { date: '2024-01-03' } })
+    expect(result.size).toEqual(0)
+  })
+
   it('should get sunrise/sunset data from the API and database', async () => {
     const mockDbDocs: SunriseSunsetEntity[] = [
       { _id: '2024-01-01', sunrise: '2024-01-01T07:00:00-07:00', sunset: '2024-01-01T19:00:00-07:00' },
@@ -165,8 +327,8 @@ describe('SunriseSunsetService', () => {
   it('should get one sunrise/sunset data from the database', async () => {
     const mockDbDocs: SunriseSunsetEntity[] = [
       { _id: '2024-01-01', sunrise: '2024-01-01T07:00:00-07:00', sunset: '2024-01-01T19:00:00-07:00' },
-      { _id: '2024-01-02', sunrise: '2024-01-02T07:01:00-07:00', sunset: '2024-01-02T19:00:01-07:00' },
-      { _id: '2024-01-03', sunrise: '2024-01-03T07:02:00-07:00', sunset: '2024-01-03T19:00:02-07:00' },
+      { _id: '2024-01-02', sunrise: '2024-01-02T07:01:00-07:00', sunset: '2024-01-02T19:01:00-07:00' },
+      { _id: '2024-01-03', sunrise: '2024-01-03T07:02:00-07:00', sunset: '2024-01-03T19:02:00-07:00' },
     ]
     const mockResponse: SunriseSunset = {
       sunrise: parseISO('2024-01-01T07:00:00-07:00'),

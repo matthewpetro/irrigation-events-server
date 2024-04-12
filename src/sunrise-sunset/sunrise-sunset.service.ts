@@ -33,8 +33,6 @@ const dbDocumentsToSunriseSunsets = (documents: SunriseSunsetEntity[]) =>
     return accumulator
   }, new Map() as SunriseSunsets)
 
-// TODO: add error handling in this service
-
 @Injectable()
 export class SunriseSunsetService implements OnModuleInit {
   private axiosInstance: AxiosInstance
@@ -62,11 +60,19 @@ export class SunriseSunsetService implements OnModuleInit {
 
   public async getSunriseSunset(date: Date) {
     const sunriseSunsets = await this.getSunriseSunsets(date, date)
-    return sunriseSunsets.get(formatDate(date))!
+    return sunriseSunsets.get(formatDate(date))
   }
 
   public async getSunriseSunsets(startDate: Date, endDate: Date) {
-    const dbDocs = await this.getSunriseSunsetsFromDb(formatDate(startDate), formatDate(endDate))
+    let dbDocs: SunriseSunsetEntity[] = []
+    try {
+      dbDocs = await this.getSunriseSunsetsFromDb(formatDate(startDate), formatDate(endDate))
+    } catch (e) {
+      this.logger.error(
+        e,
+        `Failed to get sunrise/sunsets from database for dates ${formatDate(startDate)} to ${formatDate(endDate)}`
+      )
+    }
     const sunriseSunsets = dbDocumentsToSunriseSunsets(dbDocs)
 
     // Iterate through each day between the start and end dates
@@ -76,16 +82,21 @@ export class SunriseSunsetService implements OnModuleInit {
       // If we don't have a sunrise/sunset for the date, fetch it from the API,
       // save it to the database and add to the sunriseSunsets object.
       if (!sunriseSunsets.has(dateString)) {
-        const sunriseSunsetResponse = await this.getSunriseSunsetFromApi(dateString)
-        sunriseSunsets.set(dateString, {
-          sunrise: parseISO(sunriseSunsetResponse.results.sunrise),
-          sunset: parseISO(sunriseSunsetResponse.results.sunset),
-        })
-        // We don't need to wait for the insert to complete, so we don't await it.
-        // If it fails, log it and move on.
-        this.insertSunriseSunset(sunriseSunsetToDbDocument(sunriseSunsetResponse)).catch((e) => {
-          this.logger.error(e, `Failed to insert sunrise/sunset for ${dateString}`)
-        })
+        let sunriseSunsetResponse: SunriseSunsetResponse | undefined
+        try {
+          sunriseSunsetResponse = await this.getSunriseSunsetFromApi(dateString)
+          sunriseSunsets.set(dateString, {
+            sunrise: parseISO(sunriseSunsetResponse.results.sunrise),
+            sunset: parseISO(sunriseSunsetResponse.results.sunset),
+          })
+          // We don't need to wait for the insert to complete, so we don't await it.
+          // If it fails, log it and move on.
+          this.insertSunriseSunset(sunriseSunsetToDbDocument(sunriseSunsetResponse)).catch((e) => {
+            this.logger.error(e, `Failed to insert sunrise/sunset for ${dateString}`)
+          })
+        } catch (e) {
+          this.logger.error(e, `Failed to get sunrise/sunset from API for ${dateString}`)
+        }
       }
     }
     return sunriseSunsets
