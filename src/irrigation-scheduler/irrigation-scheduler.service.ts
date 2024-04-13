@@ -42,12 +42,20 @@ function createDateFromTimeString(timeString: string) {
 @Injectable()
 export class IrrigationSchedulerService {
   private readonly logger = new Logger(IrrigationSchedulerService.name)
+  private readonly defaultSunriseSunset: SunriseSunset
   public constructor(
     private configService: ConfigService<EnvironmentVariables, true>,
     private irrigationProgramsService: IrrigationProgramsService,
     private makerApiService: MakerApiService,
     private sunriseSunsetService: SunriseSunsetService
-  ) {}
+  ) {
+    const defaultSunrise = this.configService.get<string>('DEFAULT_SUNRISE_TIME', '06:30', { infer: true })
+    const defaultSunset = this.configService.get<string>('DEFAULT_SUNSET_TIME', '18:30', { infer: true })
+    this.defaultSunriseSunset = {
+      sunrise: createDateFromTimeString(defaultSunrise),
+      sunset: createDateFromTimeString(defaultSunset),
+    }
+  }
 
   // When the start time of a program is reached, calculate the intervals for each device for the
   // whole program.
@@ -61,18 +69,12 @@ export class IrrigationSchedulerService {
   async run() {
     this.logger.log('Running irrigation scheduler')
     let irrigationPrograms: IrrigationProgram[]
-    let sunriseSunset = await this.sunriseSunsetService.getSunriseSunset(new Date())
-    if (!sunriseSunset) {
-      const sunriseString = this.configService.get<string>('DEFAULT_SUNRISE_TIME', '06:30', { infer: true })
-      const sunsetString = this.configService.get<string>('DEFAULT_SUNSET_TIME', '18:30', { infer: true })
-      sunriseSunset = {
-        sunrise: createDateFromTimeString(sunriseString),
-        sunset: createDateFromTimeString(sunsetString),
-      } as SunriseSunset
-    }
+    const sunriseSunset = await this.sunriseSunsetService.getSunriseSunset(new Date())
     try {
       const programs = await this.irrigationProgramsService.findAll()
-      irrigationPrograms = programs.map((program) => new IrrigationProgram(program, sunriseSunset))
+      irrigationPrograms = programs.map(
+        (program) => new IrrigationProgram(program, sunriseSunset ?? this.defaultSunriseSunset)
+      )
     } catch (error) {
       this.logger.error('Error getting irrigation programs:', error)
       return
