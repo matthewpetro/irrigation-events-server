@@ -6,7 +6,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
 import { IrrigationProgram } from './irrigation-program'
 import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval.interface'
-import { addDays, addMinutes, format, interval, isThisMinute } from 'date-fns'
+import { addDays, addMinutes, format, interval, isThisMinute, set, startOfMinute } from 'date-fns'
 import type { UpdateIrrigationProgram } from '@/irrigation-programs/types'
 import { DeviceState } from '@/enums/device-state.enum'
 import { ConfigService } from '@nestjs/config'
@@ -34,6 +34,11 @@ function calculateNextRunDate({ wateringPeriod }: IrrigationProgram) {
   return format(addDays(Date.now(), wateringPeriod), 'yyyy-MM-dd')
 }
 
+function createDateFromTimeString(timeString: string) {
+  const [hours, minutes] = timeString.split(':')
+  return startOfMinute(set(Date.now(), { hours: parseInt(hours), minutes: parseInt(minutes) }))
+}
+
 @Injectable()
 export class IrrigationSchedulerService {
   private readonly logger = new Logger(IrrigationSchedulerService.name)
@@ -55,13 +60,15 @@ export class IrrigationSchedulerService {
   @Cron(CronExpression.EVERY_MINUTE, { name: 'irrigation-scheduler', disabled: process.env.NODE_ENV === 'test' })
   async run() {
     this.logger.log('Running irrigation scheduler')
-    let sunriseSunset: SunriseSunset
     let irrigationPrograms: IrrigationProgram[]
-    try {
-      sunriseSunset = await this.sunriseSunsetService.getSunriseSunset(new Date())
-    } catch (error) {
-      this.logger.error('Error getting sunrise and sunset for today:', error)
-      return
+    let sunriseSunset = await this.sunriseSunsetService.getSunriseSunset(new Date())
+    if (!sunriseSunset) {
+      const sunriseString = this.configService.get<string>('DEFAULT_SUNRISE_TIME', '06:30', { infer: true })
+      const sunsetString = this.configService.get<string>('DEFAULT_SUNSET_TIME', '18:30', { infer: true })
+      sunriseSunset = {
+        sunrise: createDateFromTimeString(sunriseString),
+        sunset: createDateFromTimeString(sunsetString),
+      } as SunriseSunset
     }
     try {
       const programs = await this.irrigationProgramsService.findAll()

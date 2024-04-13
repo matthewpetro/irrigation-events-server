@@ -11,6 +11,8 @@ import {
   sunriseSunsetMock,
   singleDeviceRunningMock,
   singleDeviceMock,
+  singleDeviceSunriseSunsetMock,
+  singleDeviceSunriseSunsetRunningMock,
   multipleDevicesSimultaneousMock,
   multipleDevicesSimultaneousRunningMock,
   multipleDevicesSequentialMock,
@@ -82,7 +84,7 @@ describe('IrrigationSchedulerService', () => {
       await service.run()
       expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
-      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('1', {
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(singleDeviceMock.id, {
         nextRunDate: singleDeviceRunningMock.nextRunDate,
         deviceIntervals: singleDeviceRunningMock.deviceIntervals,
       })
@@ -103,10 +105,26 @@ describe('IrrigationSchedulerService', () => {
       await service.run()
       expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
-      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('1', {
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(singleDeviceRunningMock.id, {
         deviceIntervals: null,
       })
       expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(1, DeviceState.OFF)
+    })
+  })
+
+  describe('program with one device and sunrise/sunset start times', () => {
+    it('should calculate intervals using the default sunrise and sunset times', async () => {
+      jest.setSystemTime(set(referenceDate, { hours: 6, minutes: 30 }))
+      mockSunriseSunsetService.getSunriseSunset.mockResolvedValue(undefined)
+      mockIrrigationProgramsService.findAll.mockResolvedValue([singleDeviceSunriseSunsetMock])
+      await service.run()
+      expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(singleDeviceSunriseSunsetMock.id, {
+        nextRunDate: singleDeviceSunriseSunsetRunningMock.nextRunDate,
+        deviceIntervals: singleDeviceSunriseSunsetRunningMock.deviceIntervals,
+      })
+      expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(1, DeviceState.ON)
     })
   })
 
@@ -117,7 +135,7 @@ describe('IrrigationSchedulerService', () => {
       await service.run()
       expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
-      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('2', {
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(multipleDevicesSimultaneousMock.id, {
         nextRunDate: multipleDevicesSimultaneousRunningMock.nextRunDate,
         deviceIntervals: multipleDevicesSimultaneousRunningMock.deviceIntervals,
       })
@@ -139,7 +157,7 @@ describe('IrrigationSchedulerService', () => {
       await service.run()
       expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
-      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('2', {
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(multipleDevicesSimultaneousRunningMock.id, {
         deviceIntervals: null,
       })
       expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(1, DeviceState.OFF)
@@ -154,7 +172,7 @@ describe('IrrigationSchedulerService', () => {
       await service.run()
       expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
-      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('3', {
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(multipleDevicesSequentialMock.id, {
         nextRunDate: multipleDevicesSequentialRunningMock.nextRunDate,
         deviceIntervals: multipleDevicesSequentialRunningMock.deviceIntervals,
       })
@@ -185,7 +203,7 @@ describe('IrrigationSchedulerService', () => {
       await service.run()
       expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
-      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('3', {
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(multipleDevicesSequentialRunningMock.id, {
         deviceIntervals: null,
       })
       expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(2, DeviceState.OFF)
@@ -199,7 +217,7 @@ describe('IrrigationSchedulerService', () => {
       await service.run()
       expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
-      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('4', {
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(multipleDevicesMultipleStartTimesMock.id, {
         nextRunDate: multipleDevicesMultipleStartTimesRunningMock.nextRunDate,
         deviceIntervals: multipleDevicesMultipleStartTimesRunningMock.deviceIntervals,
       })
@@ -248,9 +266,12 @@ describe('IrrigationSchedulerService', () => {
       await service.run()
       expect(mockSunriseSunsetService.getSunriseSunset).toHaveBeenCalled()
       expect(mockIrrigationProgramsService.findAll).toHaveBeenCalled()
-      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith('4', {
-        deviceIntervals: null,
-      })
+      expect(mockIrrigationProgramsService.update).toHaveBeenCalledWith(
+        multipleDevicesMultipleStartTimesRunningMock.id,
+        {
+          deviceIntervals: null,
+        }
+      )
       expect(mockMakerApiService.setDeviceState).toHaveBeenCalledWith(2, DeviceState.OFF)
     })
   })

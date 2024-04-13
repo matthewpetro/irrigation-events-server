@@ -33,9 +33,40 @@ export const singleDeviceRunningMock: IrrigationProgram = {
   ],
 }
 
-export const multipleDevicesSimultaneousMock: IrrigationProgram = {
+export const singleDeviceSunriseSunsetMock: IrrigationProgram = {
   id: '2',
   name: 'Test Program 2',
+  duration: 15,
+  wateringPeriod: 2,
+  startTimes: ['sunrise', 'sunset'],
+  deviceIds: [1],
+  simultaneousIrrigation: false,
+}
+
+export const singleDeviceSunriseSunsetRunningMock: IrrigationProgram = {
+  ...singleDeviceSunriseSunsetMock,
+  nextRunDate: '2024-01-03',
+  deviceIntervals: [
+    {
+      deviceId: 1,
+      interval: interval(
+        startOfMinute(set(referenceDate, { hours: 6, minutes: 30 })),
+        startOfMinute(set(referenceDate, { hours: 6, minutes: 45 }))
+      ),
+    },
+    {
+      deviceId: 1,
+      interval: interval(
+        startOfMinute(set(referenceDate, { hours: 18, minutes: 30 })),
+        startOfMinute(set(referenceDate, { hours: 18, minutes: 45 }))
+      ),
+    },
+  ],
+}
+
+export const multipleDevicesSimultaneousMock: IrrigationProgram = {
+  id: '3',
+  name: 'Test Program 3',
   duration: 15,
   wateringPeriod: 2,
   startTimes: ['07:00'],
@@ -65,8 +96,8 @@ export const multipleDevicesSimultaneousRunningMock: IrrigationProgram = {
 }
 
 export const multipleDevicesSequentialMock: IrrigationProgram = {
-  id: '3',
-  name: 'Test Program 3',
+  id: '4',
+  name: 'Test Program 4',
   duration: 15,
   wateringPeriod: 2,
   startTimes: ['07:00'],
