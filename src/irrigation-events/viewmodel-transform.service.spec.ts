@@ -3,6 +3,7 @@ import { ViewmodelTransformService } from '@/irrigation-events/viewmodel-transfo
 import * as happyPathMocks from './mocks/viewmodel-transform/happy-path.mocks'
 import * as missingOffMocks from './mocks/viewmodel-transform/missing-off.mocks'
 import * as missingFinalOffMocks from './mocks/viewmodel-transform/missing-final-off.mocks'
+import * as missingFinalOffUnknownStateMocks from './mocks/viewmodel-transform/missing-final-off-unknown-state.mocks'
 import * as deviceCurrentlyOnMocks from './mocks/viewmodel-transform/device-currently-on.mocks'
 import * as missingOnMocks from './mocks/viewmodel-transform/missing-on.mocks'
 
@@ -34,6 +35,11 @@ describe('ViewmodelTransformService', () => {
   it('final off missing', () => {
     const viewmodels = service.transform([missingFinalOffMocks.deviceEvents])
     expect(viewmodels).toEqual(expect.arrayContaining(missingFinalOffMocks.resultViewmodels))
+  })
+
+  it('final off missing and unknown device state', () => {
+    const viewmodels = service.transform([missingFinalOffUnknownStateMocks.deviceEvents])
+    expect(viewmodels).toEqual(expect.arrayContaining(missingFinalOffUnknownStateMocks.resultViewmodels))
   })
 
   it('device currently on', () => {

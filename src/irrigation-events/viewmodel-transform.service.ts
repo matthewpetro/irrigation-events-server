@@ -39,22 +39,34 @@ function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: Device
       // ON followed by nothing means the device is currently on or
       // the final OFF event is missing. Check the current device
       // states to determine which is the case.
-      viewmodels.push(
-        currentDeviceState === DeviceState.ON
-          ? {
-              startTimestamp: convertTimestampToViewmodel(event.timestamp),
-              endTimestamp: convertTimestampToViewmodel(Date.now()),
-              title: event.deviceName,
-              deviceId: event.deviceId,
-              currentlyOn: true,
-            }
-          : {
-              startTimestamp: convertTimestampToViewmodel(event.timestamp),
-              title: event.deviceName,
-              deviceId: event.deviceId,
-              warning: Warning.MISSING_OFF,
-            }
-      )
+      if (!currentDeviceState) {
+        // If the current device state is unknown, we can't determine
+        // if the device is currently on or if the final OFF event is
+        // missing. We'll show a warning.
+        viewmodels.push({
+          startTimestamp: convertTimestampToViewmodel(event.timestamp),
+          title: event.deviceName,
+          deviceId: event.deviceId,
+          warning: Warning.DEVICE_STATE_UNKNOWN,
+        })
+      } else {
+        if (currentDeviceState === DeviceState.ON) {
+          viewmodels.push({
+            startTimestamp: convertTimestampToViewmodel(event.timestamp),
+            endTimestamp: convertTimestampToViewmodel(Date.now()),
+            title: event.deviceName,
+            deviceId: event.deviceId,
+            currentlyOn: true,
+          })
+        } else {
+          viewmodels.push({
+            startTimestamp: convertTimestampToViewmodel(event.timestamp),
+            title: event.deviceName,
+            deviceId: event.deviceId,
+            warning: Warning.MISSING_OFF,
+          })
+        }
+      }
       i += 1
     } else if (event.state === DeviceState.OFF) {
       // OFF means an ON event is missing

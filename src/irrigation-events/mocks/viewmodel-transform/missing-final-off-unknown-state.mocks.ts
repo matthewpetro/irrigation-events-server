@@ -40,7 +40,7 @@ const deviceIrrigationEvents: IrrigationEvent[] = [
 const deviceEvents = {
   deviceId: 1,
   events: deviceIrrigationEvents,
-  currentDeviceState: DeviceState.OFF,
+  currentDeviceState: undefined,
 } as DeviceEvents
 
 const resultViewmodels: IrrigationEventViewmodel[] = [
@@ -60,7 +60,7 @@ const resultViewmodels: IrrigationEventViewmodel[] = [
     startTimestamp: '2024-01-03T14:00:00.000Z',
     title: 'Device 1',
     deviceId: 1,
-    warning: Warning.MISSING_OFF,
+    warning: Warning.DEVICE_STATE_UNKNOWN,
   },
 ]
 
