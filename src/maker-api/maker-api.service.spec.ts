@@ -50,7 +50,14 @@ describe('MakerApiService', () => {
     expect(deviceStates).toEqual({})
   })
 
+  it('should return empty object if the Maker API call returns an error', async () => {
+    mockGet.mockRejectedValue(new Error('Test error'))
+    const deviceStates = await service.getAllDeviceStates()
+    expect(deviceStates).toEqual({})
+  })
+
   it('should set a device state correctly', async () => {
+    mockGet.mockResolvedValue(undefined)
     await service.setDeviceState(42, DeviceState.ON)
     expect(mockGet).toHaveBeenCalledWith(`/42/${DeviceState.ON}`)
   })
@@ -60,5 +67,12 @@ describe('MakerApiService', () => {
     const deviceState = await service.getDeviceState(42)
     expect(mockGet).toHaveBeenCalledWith(`/42/attribute/switch`)
     expect(deviceState).toEqual(DeviceState.ON)
+  })
+
+  it('should return undefined if the Maker API call returns an error', async () => {
+    mockGet.mockRejectedValue(new Error('Test error'))
+    const deviceState = await service.getDeviceState(42)
+    expect(mockGet).toHaveBeenCalledWith(`/42/attribute/switch`)
+    expect(deviceState).toBeUndefined()
   })
 })

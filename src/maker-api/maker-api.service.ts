@@ -1,5 +1,5 @@
 import EnvironmentVariables from '@/environment-variables'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import axios, { AxiosInstance } from 'axios'
 import { DeviceState } from '@/enums/device-state.enum'
@@ -16,6 +16,7 @@ interface MakerDeviceDetails {
 
 @Injectable()
 export class MakerApiService implements OnModuleInit {
+  private readonly logger = new Logger(MakerApiService.name)
   private axiosInstance: AxiosInstance
   public constructor(private configService: ConfigService<EnvironmentVariables, true>) {}
 
@@ -29,9 +30,16 @@ export class MakerApiService implements OnModuleInit {
   }
 
   public async getAllDeviceStates() {
-    const response = await this.axiosInstance.get<MakerDeviceDetails[]>('/all')
-    const data = response.data ?? []
-    return Object.fromEntries(data.map((device) => [parseInt(device.id, 10), device.attributes.switch])) as DeviceStates
+    try {
+      const response = await this.axiosInstance.get<MakerDeviceDetails[]>('/all')
+      const data = response.data ?? []
+      return Object.fromEntries(
+        data.map((device) => [parseInt(device.id, 10), device.attributes.switch])
+      ) as DeviceStates
+    } catch (error) {
+      this.logger.error('Error getting Maker device states: ', error)
+    }
+    return {}
   }
 
   public async setDeviceState(deviceId: number, state: DeviceState) {
@@ -39,7 +47,11 @@ export class MakerApiService implements OnModuleInit {
   }
 
   public async getDeviceState(deviceId: number) {
-    const response = await this.axiosInstance.get<{ value: string }>(`/${deviceId}/attribute/switch`)
-    return response.data.value as DeviceState
+    try {
+      const response = await this.axiosInstance.get<{ value: string }>(`/${deviceId}/attribute/switch`)
+      return response.data.value as DeviceState
+    } catch (error) {
+      this.logger.error(`Error getting Maker device state for device ${deviceId}: `, error)
+    }
   }
 }
