@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import Nano, { DocumentScope } from 'nano'
 import { ConfigService } from '@nestjs/config'
 import EnvironmentVariables from '@/environment-variables'
@@ -25,10 +25,9 @@ const dbDocumentToIrrigationEvent = ({ _id, deviceName, deviceId, state }: Irrig
     state: state,
   }) as IrrigationEvent
 
-// TODO: add error handling in this service
-
 @Injectable()
 export class IrrigationEventsService implements OnModuleInit {
+  private readonly logger = new Logger(IrrigationEventsService.name)
   private db: DocumentScope<IrrigationEventDocument>
 
   public constructor(
@@ -47,24 +46,51 @@ export class IrrigationEventsService implements OnModuleInit {
     return result.docs
   }
 
-  public async insertIrrigationEvent(irrigationEvent: MakerApiEventDto) {
-    await this.db.insert(makerEventToIrrigationEvent(irrigationEvent))
+  public async createIrrigationEvent(irrigationEvent: MakerApiEventDto) {
+    try {
+      const result = await this.db.insert(makerEventToIrrigationEvent(irrigationEvent))
+      if (!result.ok) {
+        this.logger.error('Failed to create irrigation event', result)
+        throw new HttpException('Failed to create irrigation event', HttpStatus.INTERNAL_SERVER_ERROR)
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      this.logger.error('Failed to create irrigation event', error)
+      throw new HttpException('Failed to create irrigation event', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
   public async getIrrigationEvents(startTimestamp: string, endTimestamp: string) {
-    const dbDocuments = await this.executeQuery(
-      queryBuilders.irrigationEventsQueryBuilder(startTimestamp, endTimestamp)
-    )
-    return dbDocuments.map(dbDocumentToIrrigationEvent)
+    try {
+      const dbDocuments = await this.executeQuery(
+        queryBuilders.irrigationEventsQueryBuilder(startTimestamp, endTimestamp)
+      )
+      return dbDocuments.map(dbDocumentToIrrigationEvent)
+    } catch (error) {
+      this.logger.error('Failed to retrieve irrigation events', error)
+      throw new HttpException('Failed to retrieve irrigation events', HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
   public async getEventsBeforeStart(startTimestamp: string, deviceId: number) {
-    const dbDocuments = await this.executeQuery(queryBuilders.eventsBeforeStartQueryBuilder(startTimestamp, deviceId))
-    return dbDocuments.map(dbDocumentToIrrigationEvent)
+    try {
+      const dbDocuments = await this.executeQuery(queryBuilders.eventsBeforeStartQueryBuilder(startTimestamp, deviceId))
+      return dbDocuments.map(dbDocumentToIrrigationEvent)
+    } catch (error) {
+      this.logger.error('Failed to retreive events before start', error)
+    }
+    return []
   }
 
   public async getEventsAfterEnd(endTimestamp: string, deviceId: number) {
-    const dbDocuments = await this.executeQuery(queryBuilders.eventsAfterEndQueryBuilder(endTimestamp, deviceId))
-    return dbDocuments.map(dbDocumentToIrrigationEvent)
+    try {
+      const dbDocuments = await this.executeQuery(queryBuilders.eventsAfterEndQueryBuilder(endTimestamp, deviceId))
+      return dbDocuments.map(dbDocumentToIrrigationEvent)
+    } catch (error) {
+      this.logger.error('Failed to retrieve events after end', error)
+    }
+    return []
   }
 }

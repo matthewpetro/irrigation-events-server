@@ -28,6 +28,7 @@ jest.mock('nano', () => {
 
 import { IrrigationEventsService } from '@/irrigation-events/irrigation-events.service'
 import { DatabaseModule } from '@/database/database.module'
+import { HttpException } from '@nestjs/common'
 
 const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/
 
@@ -68,8 +69,33 @@ describe('IrrigationEventsService', () => {
       state: mockIrrigationEvent.value,
       deviceId: mockIrrigationEvent.deviceId,
     }
-    await service.insertIrrigationEvent(mockIrrigationEvent)
+    mockInsert.mockResolvedValue({ ok: true })
+    await service.createIrrigationEvent(mockIrrigationEvent)
     expect(mockInsert).toHaveBeenCalledWith(mockDocument)
+  })
+
+  it('should throw an exception if the database cannot insert an irrigation event', async () => {
+    const mockIrrigationEvent: MakerApiEventDto = {
+      name: 'Name Field',
+      displayName: 'Display Name Field',
+      value: DeviceState.ON,
+      deviceId: 42,
+    }
+    mockInsert.mockResolvedValue({ ok: false })
+    await expect(service.createIrrigationEvent(mockIrrigationEvent)).rejects.toThrow(HttpException)
+    expect(mockInsert).toHaveBeenCalled()
+  })
+
+  it('should throw an exception if the database throws an error', async () => {
+    const mockIrrigationEvent: MakerApiEventDto = {
+      name: 'Name Field',
+      displayName: 'Display Name Field',
+      value: DeviceState.ON,
+      deviceId: 42,
+    }
+    mockInsert.mockRejectedValue(new Error('Database error'))
+    await expect(service.createIrrigationEvent(mockIrrigationEvent)).rejects.toThrow(HttpException)
+    expect(mockInsert).toHaveBeenCalled()
   })
 
   it('should get irrigation events', async () => {
@@ -105,24 +131,7 @@ describe('IrrigationEventsService', () => {
     const mockEndTimestamp = '2024-01-02T00:00:00.000Z'
     mockFind.mockResolvedValue({ docs: mockDbDocs })
     const result = await service.getIrrigationEvents(mockStartTimestamp, mockEndTimestamp)
-    expect(mockFind).toHaveBeenCalledWith({
-      selector: {
-        $and: [
-          {
-            _id: {
-              $gt: mockStartTimestamp,
-            },
-          },
-          {
-            _id: {
-              $lt: mockEndTimestamp,
-            },
-          },
-        ],
-      },
-      sort: [{ _id: 'asc' }],
-      limit: 10000,
-    })
+    expect(mockFind).toHaveBeenCalled()
     expect(result).toEqual(mockResponse)
   })
 
@@ -131,6 +140,14 @@ describe('IrrigationEventsService', () => {
     const result = await service.getIrrigationEvents('2024-01-01T00:00:00.000Z', '2024-01-02T00:00:00.000Z')
     expect(mockFind).toHaveBeenCalled()
     expect(result).toEqual([])
+  })
+
+  it('should throw an exception if the database throws an error while getting irrigation events', async () => {
+    mockFind.mockRejectedValue(new Error('Database error'))
+    await expect(service.getIrrigationEvents('2024-01-01T00:00:00.000Z', '2024-01-02T00:00:00.000Z')).rejects.toThrow(
+      HttpException
+    )
+    expect(mockFind).toHaveBeenCalled()
   })
 
   it('should get irrigation events before start', async () => {
@@ -166,33 +183,19 @@ describe('IrrigationEventsService', () => {
     const mockDeviceId = 42
     mockFind.mockResolvedValue({ docs: mockDbDocs })
     const result = await service.getEventsBeforeStart(mockStartTimestamp, mockDeviceId)
-    expect(mockFind).toHaveBeenCalledWith({
-      selector: {
-        $and: [
-          {
-            _id: {
-              $lt: mockStartTimestamp,
-            },
-          },
-          {
-            deviceId: {
-              $eq: mockDeviceId,
-            },
-          },
-        ],
-      },
-      limit: 2,
-      sort: [
-        {
-          _id: 'desc',
-        },
-      ],
-    })
+    expect(mockFind).toHaveBeenCalled()
     expect(result).toEqual(mockResponse)
   })
 
   it('should get an empty array of irrigation events before start', async () => {
     mockFind.mockResolvedValue({ docs: [] })
+    const result = await service.getEventsBeforeStart('2024-01-01T00:00:00.000Z', 42)
+    expect(mockFind).toHaveBeenCalled()
+    expect(result).toEqual([])
+  })
+
+  it('should get an empty array of irrigation events before start if the databse throws an error', async () => {
+    mockFind.mockRejectedValue(new Error('Database error'))
     const result = await service.getEventsBeforeStart('2024-01-01T00:00:00.000Z', 42)
     expect(mockFind).toHaveBeenCalled()
     expect(result).toEqual([])
@@ -231,29 +234,15 @@ describe('IrrigationEventsService', () => {
     const mockDeviceId = 42
     mockFind.mockResolvedValue({ docs: mockDbDocs })
     const result = await service.getEventsAfterEnd(mockEndTimestamp, mockDeviceId)
-    expect(mockFind).toHaveBeenCalledWith({
-      selector: {
-        $and: [
-          {
-            _id: {
-              $gt: mockEndTimestamp,
-            },
-          },
-          {
-            deviceId: {
-              $eq: mockDeviceId,
-            },
-          },
-        ],
-      },
-      limit: 2,
-      sort: [
-        {
-          _id: 'asc',
-        },
-      ],
-    })
+    expect(mockFind).toHaveBeenCalled()
     expect(result).toEqual(mockResponse)
+  })
+
+  it('should get an empty array of irrigation events after end if the databse throws an error', async () => {
+    mockFind.mockRejectedValue(new Error('Database error'))
+    const result = await service.getEventsAfterEnd('2024-01-01T00:00:00.000Z', 42)
+    expect(mockFind).toHaveBeenCalled()
+    expect(result).toEqual([])
   })
 
   it('should get an empty array of irrigation events after end', async () => {

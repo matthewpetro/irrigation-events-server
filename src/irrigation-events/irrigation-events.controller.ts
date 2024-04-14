@@ -33,8 +33,6 @@ const irrigationEventsToDeviceEvents = (irrigationEvents: IrrigationEvent[]): De
   return deviceEvents
 }
 
-// TODO: add error handling in this controller
-
 @Controller('irrigation-events')
 export class IrrigationEventsController {
   constructor(
@@ -48,7 +46,7 @@ export class IrrigationEventsController {
     new ValidationPipe({ transform: true, whitelist: true, transformOptions: { enableImplicitConversion: true } })
   )
   async create(@Body('content') makerApiEventContent: MakerApiEventDto) {
-    this.irrigationEventsService.insertIrrigationEvent(makerApiEventContent)
+    this.irrigationEventsService.createIrrigationEvent(makerApiEventContent)
   }
 
   @Get()
