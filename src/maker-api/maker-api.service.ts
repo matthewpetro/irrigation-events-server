@@ -12,8 +12,6 @@ interface MakerDeviceDetails {
   }
 }
 
-// TODO: add error handling in this service
-
 @Injectable()
 export class MakerApiService implements OnModuleInit {
   private readonly logger = new Logger(MakerApiService.name)
