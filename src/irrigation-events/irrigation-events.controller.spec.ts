@@ -11,7 +11,7 @@ import { parseISO } from 'date-fns'
 import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
 
 const mockIrrigationEventsService = {
-  insertIrrigationEvent: jest.fn(),
+  createIrrigationEvent: jest.fn(),
   getIrrigationEvents: jest.fn(),
   getEventsBeforeStart: jest.fn(),
   getEventsAfterEnd: jest.fn(),
@@ -51,7 +51,7 @@ describe('IrrigationEventsController', () => {
     expect(controller).toBeDefined()
   })
 
-  it('should call insertIrrigationEvent', async () => {
+  it('should call createIrrigationEvent', async () => {
     const makerApiEventDto = {
       name: 'switch',
       displayName: 'Device 1',
@@ -59,7 +59,7 @@ describe('IrrigationEventsController', () => {
       value: DeviceState.ON,
     } as MakerApiEventDto
     await controller.create(makerApiEventDto)
-    expect(mockIrrigationEventsService.insertIrrigationEvent).toHaveBeenCalledWith(makerApiEventDto)
+    expect(mockIrrigationEventsService.createIrrigationEvent).toHaveBeenCalledWith(makerApiEventDto)
   })
 
   it('should return viewmodels', async () => {
