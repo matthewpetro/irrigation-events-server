@@ -1,6 +1,8 @@
+/* eslint-disable max-classes-per-file */
 import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common'
 import { IsISO8601 } from 'class-validator'
 import { isWithinInterval, parseISO } from 'date-fns'
+import { ApiBody, ApiProperty } from '@nestjs/swagger'
 import { IrrigationEventsService } from './irrigation-events.service'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
@@ -8,11 +10,11 @@ import { DeviceState } from '@/enums/device-state.enum'
 import { MakerApiService } from '@/maker-api/maker-api.service'
 import { ViewmodelTransformService } from './viewmodel-transform.service'
 import { DeviceEvents } from './interfaces/device-events.interface'
-import { ApiBody, ApiProperty } from '@nestjs/swagger'
 
 class QueryParameters {
   @IsISO8601()
   startTimestamp: string
+
   @IsISO8601()
   endTimestamp: string
 }
@@ -106,6 +108,7 @@ export class IrrigationEventsController {
   private async addCurrentDeviceStates(deviceEventsList: DeviceEvents[]): Promise<void> {
     const deviceStates = await this.makerApiService.getAllDeviceStates()
     deviceEventsList.forEach((deviceEvents) => {
+      // eslint-disable-next-line no-param-reassign
       deviceEvents.currentDeviceState = deviceStates[deviceEvents.deviceId]
     })
   }

@@ -1,13 +1,13 @@
-import { DatabaseService } from '@/database/database.service'
-import EnvironmentVariables from '@/environment-variables'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DocumentScope } from 'nano'
 import axios, { AxiosInstance } from 'axios'
+import { addDays, format, isBefore, isEqual, parseISO } from 'date-fns'
+import { DatabaseService } from '@/database/database.service'
+import { EnvironmentVariables } from '@/environment-variables'
 import { SunriseSunsetEntity } from './entities/sunrise-sunset.entity'
 import { SunriseSunsetResponse } from './interfaces/sunrise-sunset-response.interface'
 import { sunriseSunsetQueryBuilder } from './queries'
-import { addDays, format, isBefore, isEqual, parseISO } from 'date-fns'
 import type { SunriseSunsets } from './interfaces/sunrise-sunset.interface'
 
 const formatDate = (date: Date) => format(date, 'yyyy-MM-dd')
@@ -36,7 +36,9 @@ const dbDocumentsToSunriseSunsets = (documents: SunriseSunsetEntity[]) =>
 @Injectable()
 export class SunriseSunsetService implements OnModuleInit {
   private axiosInstance: AxiosInstance
+
   private db: DocumentScope<SunriseSunsetEntity>
+
   private readonly logger = new Logger(SunriseSunsetService.name)
 
   public constructor(

@@ -1,12 +1,14 @@
+/* eslint-disable max-classes-per-file */
 import { Controller, Get, Query } from '@nestjs/common'
 import { IsISO8601 } from 'class-validator'
-import { SunriseSunsetService } from './sunrise-sunset.service'
 import { parseISO } from 'date-fns'
+import { SunriseSunsetService } from './sunrise-sunset.service'
 
 // TODO: Remove this controller when no longer needed for testing purposes
 class QueryParameters {
   @IsISO8601()
   startDate: string
+
   @IsISO8601()
   endDate: string
 }

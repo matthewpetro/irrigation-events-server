@@ -49,23 +49,21 @@ function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: Device
           deviceId: event.deviceId,
           warning: Warning.DEVICE_STATE_UNKNOWN,
         })
+      } else if (currentDeviceState === DeviceState.ON) {
+        viewmodels.push({
+          startTimestamp: convertTimestampToViewmodel(event.timestamp),
+          endTimestamp: convertTimestampToViewmodel(Date.now()),
+          title: event.deviceName,
+          deviceId: event.deviceId,
+          currentlyOn: true,
+        })
       } else {
-        if (currentDeviceState === DeviceState.ON) {
-          viewmodels.push({
-            startTimestamp: convertTimestampToViewmodel(event.timestamp),
-            endTimestamp: convertTimestampToViewmodel(Date.now()),
-            title: event.deviceName,
-            deviceId: event.deviceId,
-            currentlyOn: true,
-          })
-        } else {
-          viewmodels.push({
-            startTimestamp: convertTimestampToViewmodel(event.timestamp),
-            title: event.deviceName,
-            deviceId: event.deviceId,
-            warning: Warning.MISSING_OFF,
-          })
-        }
+        viewmodels.push({
+          startTimestamp: convertTimestampToViewmodel(event.timestamp),
+          title: event.deviceName,
+          deviceId: event.deviceId,
+          warning: Warning.MISSING_OFF,
+        })
       }
       i += 1
     } else if (event.state === DeviceState.OFF) {

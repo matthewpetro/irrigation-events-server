@@ -1,4 +1,4 @@
-export default interface EnvironmentVariables {
+export interface EnvironmentVariables {
   COUCHDB_URL: string
   DB_USERNAME: string
   DB_PASSWORD: string

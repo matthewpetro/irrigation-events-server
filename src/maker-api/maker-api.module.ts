@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
-import { MakerApiService } from './maker-api.service'
 import { ConfigModule } from '@nestjs/config'
+import { MakerApiService } from './maker-api.service'
 
 @Module({
   imports: [ConfigModule],

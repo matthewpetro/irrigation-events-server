@@ -37,6 +37,7 @@ describe('IrrigationProgramsController', () => {
         if (token === IrrigationProgramsService) {
           return mockIrrigationProgramsService
         }
+        return null
       })
       .compile()
 

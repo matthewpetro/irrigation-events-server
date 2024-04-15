@@ -1,5 +1,5 @@
-import { DeviceState } from '@/enums/device-state.enum'
 import { Equals, IsNumber, IsString, IsEnum } from 'class-validator'
+import { DeviceState } from '@/enums/device-state.enum'
 
 export class MakerApiEventDto {
   @Equals('switch')

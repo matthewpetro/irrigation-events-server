@@ -1,6 +1,6 @@
+import { interval, set, startOfMinute } from 'date-fns'
 import { IrrigationProgram } from '@/irrigation-programs/interfaces/irrigation-program.interface'
 import { SunriseSunset } from '@/sunrise-sunset/interfaces/sunrise-sunset.interface'
-import { interval, set, startOfMinute } from 'date-fns'
 
 export const referenceDate = new Date('2024-01-01T00:00:00.000')
 

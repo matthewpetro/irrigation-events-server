@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { IrrigationProgramsService } from './irrigation-programs.service'
-import { DatabaseModule } from '@/database/database.module'
 import { ConfigModule } from '@nestjs/config'
 import { v4 as uuidv4 } from 'uuid'
+import { HttpStatus } from '@nestjs/common'
+import { IrrigationProgramsService } from './irrigation-programs.service'
+import { DatabaseModule } from '@/database/database.module'
 import { IrrigationProgram } from './interfaces/irrigation-program.interface'
 import { IrrigationProgramEntity } from './entities/irrigation-program.entity'
 import { CreateIrrigationProgramDto } from './dto/create-irrigation-program.dto'
 import { UpdateIrrigationProgramDto } from './dto/update-irrigation-program.dto'
-import { HttpStatus } from '@nestjs/common'
 
 // Mock the Nano library
 const mockDestroy = jest.fn()
@@ -16,26 +16,22 @@ const mockGet = jest.fn()
 const mockHead = jest.fn()
 const mockInsert = jest.fn()
 const mockList = jest.fn()
-jest.mock('nano', () => {
-  return {
-    __esModule: true,
-    default: jest.fn().mockImplementation(() => {
-      return {
-        auth: jest.fn(),
-        db: {
-          use: jest.fn().mockReturnValue({
-            destroy: mockDestroy,
-            find: mockFind,
-            get: mockGet,
-            head: mockHead,
-            insert: mockInsert,
-            list: mockList,
-          }),
-        },
-      }
-    }),
-  }
-})
+jest.mock('nano', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    auth: jest.fn(),
+    db: {
+      use: jest.fn().mockReturnValue({
+        destroy: mockDestroy,
+        find: mockFind,
+        get: mockGet,
+        head: mockHead,
+        insert: mockInsert,
+        list: mockList,
+      }),
+    },
+  })),
+}))
 
 const uuidv4Regex = /[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i
 
@@ -184,7 +180,7 @@ describe('IrrigationProgramsService', () => {
       const irrigationProgram = await service.findOne(id)
       expect(mockGet).toHaveBeenCalledWith(id)
       expect(irrigationProgram).toEqual({
-        id: id,
+        id,
         ...mockPartialIrrigationProgram,
       } as IrrigationProgram)
     })

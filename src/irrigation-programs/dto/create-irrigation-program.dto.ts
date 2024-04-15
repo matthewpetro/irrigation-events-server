@@ -1,6 +1,6 @@
 import { IsBoolean, IsISO8601, IsInt, IsOptional, IsPositive, Length, Matches, MinDate } from 'class-validator'
-import { DeviceId } from '@/types'
 import { startOfToday } from 'date-fns'
+import { DeviceId } from '@/types'
 
 export class CreateIrrigationProgramDto {
   @Length(1, 255)

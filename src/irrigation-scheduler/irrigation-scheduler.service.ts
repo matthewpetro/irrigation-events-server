@@ -1,16 +1,16 @@
+import { Injectable, Logger } from '@nestjs/common'
+import { Cron, CronExpression } from '@nestjs/schedule'
+import { addDays, addMinutes, format, interval, isThisMinute, set, startOfMinute } from 'date-fns'
+import { ConfigService } from '@nestjs/config'
 import { IrrigationProgramsService } from '@/irrigation-programs/irrigation-programs.service'
 import { MakerApiService } from '@/maker-api/maker-api.service'
 import { SunriseSunset } from '@/sunrise-sunset/interfaces/sunrise-sunset.interface'
-import { Injectable, Logger } from '@nestjs/common'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
 import { IrrigationProgram } from './irrigation-program'
 import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval.interface'
-import { addDays, addMinutes, format, interval, isThisMinute, set, startOfMinute } from 'date-fns'
 import type { UpdateIrrigationProgram } from '@/irrigation-programs/types'
 import { DeviceState } from '@/enums/device-state.enum'
-import { ConfigService } from '@nestjs/config'
-import EnvironmentVariables from '@/environment-variables'
+import { EnvironmentVariables } from '@/environment-variables'
 
 function calculateDeviceIntervals(irrigationProgram: IrrigationProgram): DeviceInterval[] {
   const { deviceIds, simultaneousIrrigation, duration } = irrigationProgram
@@ -18,15 +18,14 @@ function calculateDeviceIntervals(irrigationProgram: IrrigationProgram): DeviceI
     if (simultaneousIrrigation) {
       const irrigationInterval = interval(actualStartTime, addMinutes(actualStartTime, duration))
       return deviceIds.map((deviceId) => ({ deviceId, interval: irrigationInterval }) as DeviceInterval)
-    } else {
-      return deviceIds.map((deviceId, deviceIndex) => {
-        const irrigationInterval = interval(
-          addMinutes(actualStartTime, duration * deviceIndex),
-          addMinutes(actualStartTime, duration * deviceIndex + duration)
-        )
-        return { deviceId, interval: irrigationInterval } as DeviceInterval
-      })
     }
+    return deviceIds.map((deviceId, deviceIndex) => {
+      const irrigationInterval = interval(
+        addMinutes(actualStartTime, duration * deviceIndex),
+        addMinutes(actualStartTime, duration * deviceIndex + duration)
+      )
+      return { deviceId, interval: irrigationInterval } as DeviceInterval
+    })
   })
 }
 
@@ -42,7 +41,9 @@ function createDateFromTimeString(timeString: string) {
 @Injectable()
 export class IrrigationSchedulerService {
   private readonly logger = new Logger(IrrigationSchedulerService.name)
+
   private readonly defaultSunriseSunset: SunriseSunset
+
   public constructor(
     private configService: ConfigService<EnvironmentVariables, true>,
     private irrigationProgramsService: IrrigationProgramsService,
