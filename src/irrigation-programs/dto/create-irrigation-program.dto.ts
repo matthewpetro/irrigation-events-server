@@ -4,15 +4,15 @@ import { startOfToday } from 'date-fns'
 
 export class CreateIrrigationProgramDto {
   @Length(1, 255)
-  name: string
+  readonly name: string
 
   @IsInt()
   @IsPositive()
-  duration: number
+  readonly duration: number
 
   @IsInt()
   @IsPositive()
-  wateringPeriod: number
+  readonly wateringPeriod: number
 
   // Matches a time formatted in HH24:MM or a string containing 'sunset' or 'sunrise' followed by an optional offset
   // Examples:
@@ -21,18 +21,18 @@ export class CreateIrrigationProgramDto {
   //   sunrise+60
   //   sunset-30
   @Matches(/^(?:[01]\d|2[0-3]):(?:[0-5]\d)$|^(?:sunset|sunrise)(?:[+-]?\d+)?$/, { each: true })
-  startTimes: string[]
+  readonly startTimes: string[]
 
   @IsInt({ each: true })
   @IsPositive({ each: true })
-  deviceIds: DeviceId[]
+  readonly deviceIds: DeviceId[]
 
   @IsBoolean()
-  simultaneousIrrigation: boolean
+  readonly simultaneousIrrigation: boolean
 
   @IsISO8601()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   @IsOptional()
   @MinDate(startOfToday())
-  nextRunDate?: string | null
+  readonly nextRunDate?: string | null
 }

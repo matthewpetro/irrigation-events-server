@@ -3,14 +3,14 @@ import { Equals, IsNumber, IsString, IsEnum } from 'class-validator'
 
 export class MakerApiEventDto {
   @Equals('switch')
-  name: string
+  readonly name: string
 
   @IsString()
-  displayName: string
+  readonly displayName: string
 
   @IsNumber()
-  deviceId: number
+  readonly deviceId: number
 
   @IsEnum(DeviceState)
-  value: DeviceState
+  readonly value: DeviceState
 }
