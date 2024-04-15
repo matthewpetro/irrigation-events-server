@@ -8,7 +8,9 @@ import { DeviceState } from '@/enums/device-state.enum'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import { parseISO } from 'date-fns'
-import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
+import { IrrigationEventViewmodelDto } from './dto/irrigation-event-viewmodel.dto'
+
+// TODO: Improve date mocking in this file
 
 const mockIrrigationEventsService = {
   createIrrigationEvent: jest.fn(),
@@ -106,7 +108,7 @@ describe('IrrigationEventsController', () => {
         title: 'Device 42',
         deviceId: 42,
       },
-    ] as IrrigationEventViewmodel[])
+    ] as IrrigationEventViewmodelDto[])
   })
 
   it('should get events before the start of the time range', async () => {
@@ -138,7 +140,7 @@ describe('IrrigationEventsController', () => {
         title: 'Device 42',
         deviceId: 42,
       },
-    ] as IrrigationEventViewmodel[])
+    ] as IrrigationEventViewmodelDto[])
   })
 
   it('should get events after the end of the time range', async () => {
@@ -170,7 +172,7 @@ describe('IrrigationEventsController', () => {
         title: 'Device 42',
         deviceId: 42,
       },
-    ] as IrrigationEventViewmodel[])
+    ] as IrrigationEventViewmodelDto[])
   })
 
   it('should add current device states', async () => {
@@ -198,7 +200,7 @@ describe('IrrigationEventsController', () => {
         deviceId: 42,
         currentlyOn: true,
       },
-    ] as IrrigationEventViewmodel[])
+    ] as IrrigationEventViewmodelDto[])
     dateSpy.mockRestore()
   })
 })

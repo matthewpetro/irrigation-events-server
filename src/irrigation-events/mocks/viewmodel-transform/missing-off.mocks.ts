@@ -2,7 +2,7 @@ import { IrrigationEvent } from '../../interfaces/irrigation-event.interface'
 import { DeviceState } from '@/enums/device-state.enum'
 import { Warning } from '../../enums/warning.enum'
 import { DeviceEvents } from '../../interfaces/device-events.interface'
-import { IrrigationEventViewmodel } from '../../dto/irrigation-event-viewmodel.dto'
+import { IrrigationEventViewmodelDto } from '../../dto/irrigation-event-viewmodel.dto'
 
 const deviceIrrigationEvents: IrrigationEvent[] = [
   {
@@ -39,7 +39,7 @@ const deviceIrrigationEvents: IrrigationEvent[] = [
 
 const deviceEvents = { deviceId: 1, events: deviceIrrigationEvents } as DeviceEvents
 
-const resultViewmodels: IrrigationEventViewmodel[] = [
+const resultViewmodels: IrrigationEventViewmodelDto[] = [
   {
     startTimestamp: '2024-01-01T12:00:00.000Z',
     title: 'Device 1',

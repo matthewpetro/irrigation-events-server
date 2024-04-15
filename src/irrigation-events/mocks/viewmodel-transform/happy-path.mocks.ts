@@ -1,7 +1,7 @@
 import { IrrigationEvent } from '../../interfaces/irrigation-event.interface'
 import { DeviceState } from '@/enums/device-state.enum'
 import { DeviceEvents } from '../../interfaces/device-events.interface'
-import { IrrigationEventViewmodel } from '../../dto/irrigation-event-viewmodel.dto'
+import { IrrigationEventViewmodelDto } from '../../dto/irrigation-event-viewmodel.dto'
 
 const device1IrrigationEvents: IrrigationEvent[] = [
   {
@@ -85,7 +85,7 @@ const device2IrrigationEvents: IrrigationEvent[] = [
 
 const deviceEvents2 = { deviceId: 2, events: device2IrrigationEvents } as DeviceEvents
 
-const resultViewmodels: IrrigationEventViewmodel[] = [
+const resultViewmodels: IrrigationEventViewmodelDto[] = [
   {
     startTimestamp: '2024-01-01T12:00:00.000Z',
     endTimestamp: '2024-01-01T13:00:00.000Z',

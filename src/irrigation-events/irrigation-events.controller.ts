@@ -8,12 +8,18 @@ import { DeviceState } from '@/enums/device-state.enum'
 import { MakerApiService } from '@/maker-api/maker-api.service'
 import { ViewmodelTransformService } from './viewmodel-transform.service'
 import { DeviceEvents } from './interfaces/device-events.interface'
+import { ApiBody, ApiProperty } from '@nestjs/swagger'
 
 class QueryParameters {
   @IsISO8601()
   startTimestamp: string
   @IsISO8601()
   endTimestamp: string
+}
+
+class MakerApiWrapperDto {
+  @ApiProperty()
+  content: MakerApiEventDto
 }
 
 const isCurrentTimeWithinInterval = (startTimestamp: string, endTimestamp: string) =>
@@ -45,6 +51,7 @@ export class IrrigationEventsController {
   @UsePipes(
     new ValidationPipe({ transform: true, whitelist: true, transformOptions: { enableImplicitConversion: true } })
   )
+  @ApiBody({ type: MakerApiWrapperDto })
   async create(@Body('content') makerApiEventContent: MakerApiEventDto) {
     this.irrigationEventsService.createIrrigationEvent(makerApiEventContent)
   }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { compareAsc, roundToNearestMinutes } from 'date-fns'
-import { IrrigationEventViewmodel } from './dto/irrigation-event-viewmodel.dto'
+import { IrrigationEventViewmodelDto } from './dto/irrigation-event-viewmodel.dto'
 import { DeviceState } from '@/enums/device-state.enum'
 import { Warning } from './enums/warning.enum'
 import { DeviceEvents } from './interfaces/device-events.interface'
@@ -11,9 +11,9 @@ const convertTimestampToViewmodel = (timestamp: Parameters<typeof roundToNearest
     roundingMethod: 'trunc',
   }).toISOString()
 
-function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: DeviceEvents): IrrigationEventViewmodel[] {
+function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: DeviceEvents): IrrigationEventViewmodelDto[] {
   const sortedEvents = [...events].sort((a, b) => compareAsc(a.timestamp, b.timestamp))
-  const viewmodels: IrrigationEventViewmodel[] = []
+  const viewmodels: IrrigationEventViewmodelDto[] = []
   let i = 0
   while (i < sortedEvents.length) {
     const [event, nextEvent] = sortedEvents.slice(i, i + 2)
@@ -84,7 +84,7 @@ function createViewmodelsFromDeviceEvents({ events, currentDeviceState }: Device
 
 @Injectable()
 export class ViewmodelTransformService {
-  public transform(deviceEventsList: DeviceEvents[]): IrrigationEventViewmodel[] {
+  public transform(deviceEventsList: DeviceEvents[]): IrrigationEventViewmodelDto[] {
     return deviceEventsList.flatMap((deviceEvents) => createViewmodelsFromDeviceEvents(deviceEvents))
   }
 }
