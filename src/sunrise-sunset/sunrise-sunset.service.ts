@@ -47,13 +47,11 @@ export class SunriseSunsetService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
+    const lat = parseFloat(this.configService.get('LATITUDE'))
+    const lng = parseFloat(this.configService.get('LONGITUDE'))
     this.axiosInstance = axios.create({
       baseURL: this.configService.get<string>('SUNRISE_SUNSET_API_URL', { infer: true }),
-      params: {
-        lat: this.configService.get<number>('LATITUDE', { infer: true }),
-        lng: this.configService.get<number>('LONGITUDE', { infer: true }),
-        formatted: 0,
-      },
+      params: { lat, lng, formatted: 0 },
     })
     this.db = this.databaseService.getDatabaseConnection(
       this.configService.get<SunriseSunsetEntity>('SUNRISE_SUNSET_DB_NAME', { infer: true })

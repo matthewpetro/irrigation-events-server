@@ -27,7 +27,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       )
     await nanoAuth()
 
-    const authRefreshMinutes: number = this.configService.get<number>('DB_AUTH_REFRESH_MINUTES', { infer: true })
+    const authRefreshMinutes: number = parseInt(this.configService.get('DB_AUTH_REFRESH_MINUTES'))
     this.intervalTimeout = setInterval(nanoAuth, authRefreshMinutes * 60 * 1000)
   }
 
