@@ -80,28 +80,41 @@ export class IrrigationSchedulerService {
       this.logger.error('Error getting irrigation programs:', error)
       return
     }
-    const currentlyRunningPrograms = irrigationPrograms.filter((program) => program.isProgramRunning())
-    // Get all programs that should start now and calculate the intervals for each device
+
+    // Get all programs that should start now
     const programsToStart = irrigationPrograms.filter(
       (program) => !program.isProgramRunning() && program.shouldProgramRunToday() && program.isProgramStartTime()
     )
-    for (const program of programsToStart) {
-      const deviceIntervals = calculateDeviceIntervals(program)
-      const nextRunDate = calculateNextRunDate(program)
-      try {
-        await this.irrigationProgramsService.update(program.id, {
-          deviceIntervals,
-          nextRunDate,
-        } as UpdateIrrigationProgram)
-        program.deviceIntervals = deviceIntervals
-        currentlyRunningPrograms.push(program)
-      } catch (error) {
-        this.logger.error(
-          `Error setting device intervals and next run date for irrigation program with name ${program.name} and ID ${program.id}:`,
-          error
-        )
-      }
-    }
+
+    //  Calculate the intervals for each device and the next start date, then save to the database
+    const updateProgramsResults = await Promise.allSettled(
+      programsToStart.map(async (program) => {
+        try {
+          const deviceIntervals = calculateDeviceIntervals(program)
+          const nextRunDate = calculateNextRunDate(program)
+          await this.irrigationProgramsService.update(program.id, {
+            deviceIntervals,
+            nextRunDate,
+          } as UpdateIrrigationProgram)
+          const newProgram = program.clone()
+          newProgram.deviceIntervals = deviceIntervals
+          newProgram.nextRunDate = nextRunDate
+          return newProgram
+        } catch (error) {
+          this.logger.error(
+            `Error setting device intervals and next run date for irrigation program with name ${program.name} and ID ${program.id}:`,
+            error
+          )
+          throw error
+        }
+      })
+    )
+
+    const currentlyRunningPrograms = irrigationPrograms.filter((program) => program.isProgramRunning())
+    const updatedPrograms = updateProgramsResults
+      .filter((result) => result.status === 'fulfilled')
+      .map((result: PromiseFulfilledResult<IrrigationProgram>) => result.value)
+    currentlyRunningPrograms.push(...updatedPrograms)
 
     // Check all intervals and turn devices on or off as needed
     const meteringInterval = parseInt(this.configService.get('SWITCH_METERING_INTERVAL', '500'))
@@ -128,19 +141,21 @@ export class IrrigationSchedulerService {
     }
 
     // Check if any programs have completed and remove the intervals from the database
-    for (const program of currentlyRunningPrograms) {
-      if (program.areAllIntervalsCompleted()) {
-        try {
-          await this.irrigationProgramsService.update(program.id, {
-            deviceIntervals: null,
-          } as UpdateIrrigationProgram)
-        } catch (error) {
-          this.logger.error(
-            `Error removing device intervals for irrigation program with name ${program.name} and ID ${program.id}:`,
-            error
-          )
-        }
-      }
-    }
+    await Promise.all(
+      currentlyRunningPrograms
+        .filter((program) => program.areAllIntervalsCompleted())
+        .map(async (program) => {
+          try {
+            await this.irrigationProgramsService.update(program.id, {
+              deviceIntervals: null,
+            } as UpdateIrrigationProgram)
+          } catch (error) {
+            this.logger.error(
+              `Error removing device intervals for irrigation program with name ${program.name} and ID ${program.id}:`,
+              error
+            )
+          }
+        })
+    )
   }
 }
