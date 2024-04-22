@@ -49,6 +49,10 @@ export class IrrigationProgram implements IrrigationProgramInterface {
     this.sunriseSunset = sunriseSunset
   }
 
+  clone() {
+    return new IrrigationProgram(this, this.sunriseSunset)
+  }
+
   private getActualStartTime(startTime: string) {
     const sunriseSunsetRegex = /^(?<sunriseOrSunset>sunset|sunrise)(?<offset>[+-]?\d+)?$/
     const matches = startTime.match(sunriseSunsetRegex)
