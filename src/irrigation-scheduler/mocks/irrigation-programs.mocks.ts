@@ -127,8 +127,8 @@ export const multipleDevicesSequentialRunningMock: IrrigationProgram = {
 }
 
 export const multipleDevicesMultipleStartTimesMock: IrrigationProgram = {
-  id: '4',
-  name: 'Test Program 4',
+  id: '5',
+  name: 'Test Program 5',
   duration: 15,
   wateringPeriod: 2,
   startTimes: ['07:00', '10:00'],
