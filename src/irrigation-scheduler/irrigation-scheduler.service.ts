@@ -118,27 +118,37 @@ export class IrrigationSchedulerService {
 
     // Check all intervals and turn devices on or off as needed
     const meteringInterval = parseInt(this.configService.get('SWITCH_METERING_INTERVAL', '500'))
-    for (const program of currentlyRunningPrograms) {
-      for (const deviceInterval of program.deviceIntervals!) {
-        const { deviceId, interval } = deviceInterval
-        if (isThisMinute(interval.start)) {
+    const delayFn = async () =>
+      new Promise((resolve) => {
+        setTimeout(resolve, meteringInterval)
+      })
+    const allDeviceIntervals = currentlyRunningPrograms.flatMap((program) => program.deviceIntervals ?? [])
+    // Create a promise chain that introduces a delay between each call to the Maker API
+    // so that we don't flood the Z-Wave mesh with requests or flip too many valves on or off
+    // at the same time.
+    await allDeviceIntervals.reduce((promiseChain, { deviceId, interval: irrigationInterval }) => {
+      if (isThisMinute(irrigationInterval.start)) {
+        return promiseChain.then(async () => {
           try {
             await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
-            await new Promise((resolve) => setTimeout(resolve, meteringInterval))
+            await delayFn()
           } catch (error) {
             this.logger.error(`Error turning on device with ID ${deviceId}:`, error)
           }
-        }
-        if (isThisMinute(interval.end)) {
+        })
+      }
+      if (isThisMinute(irrigationInterval.end)) {
+        return promiseChain.then(async () => {
           try {
             await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
-            await new Promise((resolve) => setTimeout(resolve, meteringInterval))
+            await delayFn()
           } catch (error) {
             this.logger.error(`Error turning off device with ID ${deviceId}:`, error)
           }
-        }
+        })
       }
-    }
+      return promiseChain
+    }, Promise.resolve())
 
     // Check if any programs have completed and remove the intervals from the database
     await Promise.all(
