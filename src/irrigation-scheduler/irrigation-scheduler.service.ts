@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { addDays, addMinutes, format, interval, isThisMinute, set, startOfMinute } from 'date-fns'
+import { addDays, addMinutes, format, interval as dateFnsInterval, isThisMinute, set, startOfMinute } from 'date-fns'
 import { ConfigService } from '@nestjs/config'
 import { IrrigationProgramsService } from '@/irrigation-programs/irrigation-programs.service'
 import { MakerApiService } from '@/maker-api/maker-api.service'
@@ -16,15 +16,15 @@ function calculateDeviceIntervals(irrigationProgram: IrrigationProgram): DeviceI
   const { deviceIds, simultaneousIrrigation, duration } = irrigationProgram
   return irrigationProgram.getActualStartTimes().flatMap((actualStartTime) => {
     if (simultaneousIrrigation) {
-      const irrigationInterval = interval(actualStartTime, addMinutes(actualStartTime, duration))
-      return deviceIds.map((deviceId) => ({ deviceId, interval: irrigationInterval }) as DeviceInterval)
+      const interval = dateFnsInterval(actualStartTime, addMinutes(actualStartTime, duration))
+      return deviceIds.map((deviceId) => ({ deviceId, interval }) as DeviceInterval)
     }
     return deviceIds.map((deviceId, deviceIndex) => {
-      const irrigationInterval = interval(
+      const interval = dateFnsInterval(
         addMinutes(actualStartTime, duration * deviceIndex),
         addMinutes(actualStartTime, duration * deviceIndex + duration)
       )
-      return { deviceId, interval: irrigationInterval } as DeviceInterval
+      return { deviceId, interval } as DeviceInterval
     })
   })
 }
@@ -116,39 +116,41 @@ export class IrrigationSchedulerService {
       .map((result: PromiseFulfilledResult<IrrigationProgram>) => result.value)
     currentlyRunningPrograms.push(...updatedPrograms)
 
-    // Check all intervals and turn devices on or off as needed
-    const meteringInterval = parseInt(this.configService.get('SWITCH_METERING_INTERVAL', '500'))
-    const delayFn = async () =>
-      new Promise((resolve) => {
-        setTimeout(resolve, meteringInterval)
-      })
+    // Create functions to turn devices on or off as needed and put the functions in an array
     const allDeviceIntervals = currentlyRunningPrograms.flatMap((program) => program.deviceIntervals ?? [])
-    // Create a promise chain that introduces a delay between each call to the Maker API
-    // so that we don't flood the Z-Wave mesh with requests or flip too many valves on or off
-    // at the same time.
-    await allDeviceIntervals.reduce((promiseChain, { deviceId, interval: irrigationInterval }) => {
-      if (isThisMinute(irrigationInterval.start)) {
-        return promiseChain.then(async () => {
-          try {
-            await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
-            await delayFn()
-          } catch (error) {
-            this.logger.error(`Error turning on device with ID ${deviceId}:`, error)
-          }
-        })
-      }
-      if (isThisMinute(irrigationInterval.end)) {
-        return promiseChain.then(async () => {
-          try {
-            await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
-            await delayFn()
-          } catch (error) {
-            this.logger.error(`Error turning off device with ID ${deviceId}:`, error)
-          }
-        })
-      }
-      return promiseChain
-    }, Promise.resolve())
+    const deviceControlFunctions: (() => Promise<void>)[] = []
+    allDeviceIntervals
+      .filter(({ interval }) => isThisMinute(interval.start))
+      .map(({ deviceId }) => async () => {
+        try {
+          await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
+        } catch (error) {
+          this.logger.error(`Error turning on device with ID ${deviceId}:`, error)
+        }
+      }).forEach((fn) => deviceControlFunctions.push(fn))
+
+    allDeviceIntervals
+      .filter(({ interval }) => isThisMinute(interval.end))
+      .map(({ deviceId }) => async () => {
+        try {
+          await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
+        } catch (error) {
+          this.logger.error(`Error turning off device with ID ${deviceId}:`, error)
+        }
+      }).forEach((fn) => deviceControlFunctions.push(fn))
+
+    // Run the device control functions with a delay between each function
+    const meteringInterval = parseInt(this.configService.get('SWITCH_METERING_INTERVAL', '500'))
+    await deviceControlFunctions.reduce(
+      (promiseChain, fn) =>
+        promiseChain.then(fn).then(
+          async () =>
+            new Promise((resolve) => {
+              setTimeout(resolve, meteringInterval)
+            })
+        ),
+      Promise.resolve()
+    )
 
     // Check if any programs have completed and remove the intervals from the database
     await Promise.all(
