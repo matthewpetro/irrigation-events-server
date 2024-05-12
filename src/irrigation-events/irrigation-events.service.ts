@@ -1,12 +1,12 @@
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import Nano, { DocumentScope } from 'nano'
 import { ConfigService } from '@nestjs/config'
-import EnvironmentVariables from '@/environment-variables'
+import { parseISO } from 'date-fns'
+import { EnvironmentVariables } from '@/environment-variables'
 import { IrrigationEventDocument } from './entities/irrigation-event.entity'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import * as queryBuilders from './queries'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
-import { parseISO } from 'date-fns'
 import { DatabaseService } from '@/database/database.service'
 
 const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiEventDto) =>
@@ -20,14 +20,15 @@ const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiE
 const dbDocumentToIrrigationEvent = ({ _id, deviceName, deviceId, state }: IrrigationEventDocument) =>
   ({
     timestamp: parseISO(_id),
-    deviceName: deviceName,
-    deviceId: deviceId,
-    state: state,
+    deviceName,
+    deviceId,
+    state,
   }) as IrrigationEvent
 
 @Injectable()
 export class IrrigationEventsService implements OnModuleInit {
   private readonly logger = new Logger(IrrigationEventsService.name)
+
   private db: DocumentScope<IrrigationEventDocument>
 
   public constructor(

@@ -1,34 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing'
+import { ConfigModule } from '@nestjs/config'
+import { parseISO } from 'date-fns'
+import { HttpException } from '@nestjs/common'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import { IrrigationEventDocument } from './entities/irrigation-event.entity'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
 import { DeviceState } from '@/enums/device-state.enum'
-import { ConfigModule } from '@nestjs/config'
-import { parseISO } from 'date-fns'
+
+import { IrrigationEventsService } from '@/irrigation-events/irrigation-events.service'
+import { DatabaseModule } from '@/database/database.module'
 
 // Mock the Nano library
 const mockInsert = jest.fn()
 const mockFind = jest.fn()
-jest.mock('nano', () => {
-  return {
-    __esModule: true,
-    default: jest.fn().mockImplementation(() => {
-      return {
-        auth: jest.fn(),
-        db: {
-          use: jest.fn().mockReturnValue({
-            find: mockFind,
-            insert: mockInsert,
-          }),
-        },
-      }
-    }),
-  }
-})
-
-import { IrrigationEventsService } from '@/irrigation-events/irrigation-events.service'
-import { DatabaseModule } from '@/database/database.module'
-import { HttpException } from '@nestjs/common'
+jest.mock('nano', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    auth: jest.fn(),
+    db: {
+      use: jest.fn().mockReturnValue({
+        find: mockFind,
+        insert: mockInsert,
+      }),
+    },
+  })),
+}))
 
 const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/
 

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { SunriseSunsetService } from './sunrise-sunset.service'
 import { ConfigModule } from '@nestjs/config'
 import axios, { AxiosRequestConfig } from 'axios'
+import { SunriseSunsetService } from './sunrise-sunset.service'
 import { DatabaseModule } from '@/database/database.module'
 import {
   mockStartDate,
@@ -14,22 +14,18 @@ import {
 // Mock the Nano library
 const mockInsert = jest.fn()
 const mockFind = jest.fn()
-jest.mock('nano', () => {
-  return {
-    __esModule: true,
-    default: jest.fn().mockImplementation(() => {
-      return {
-        auth: jest.fn(),
-        db: {
-          use: jest.fn().mockReturnValue({
-            find: mockFind,
-            insert: mockInsert,
-          }),
-        },
-      }
-    }),
-  }
-})
+jest.mock('nano', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    auth: jest.fn(),
+    db: {
+      use: jest.fn().mockReturnValue({
+        find: mockFind,
+        insert: mockInsert,
+      }),
+    },
+  })),
+}))
 
 jest.mock('axios')
 const mockGet = jest.fn()

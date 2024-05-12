@@ -1,7 +1,3 @@
-import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval.interface'
-import { IrrigationProgram as IrrigationProgramInterface } from '@/irrigation-programs/interfaces/irrigation-program.interface'
-import { SunriseSunset } from '@/sunrise-sunset/interfaces/sunrise-sunset.interface'
-import { DeviceId } from '@/types'
 import {
   addMinutes,
   isBefore,
@@ -14,17 +10,30 @@ import {
   startOfMinute,
   startOfToday,
 } from 'date-fns'
+import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval.interface'
+import { IrrigationProgram as IrrigationProgramInterface } from '@/irrigation-programs/interfaces/irrigation-program.interface'
+import { SunriseSunset } from '@/sunrise-sunset/interfaces/sunrise-sunset.interface'
+import { DeviceId } from '@/types'
 
 export class IrrigationProgram implements IrrigationProgramInterface {
   id: string
+
   name: string
+
   duration: number
+
   wateringPeriod: number
+
   startTimes: string[]
+
   deviceIds: DeviceId[]
+
   simultaneousIrrigation: boolean
+
   nextRunDate?: string | null
+
   deviceIntervals?: DeviceInterval[] | null
+
   private readonly sunriseSunset: SunriseSunset
 
   constructor(irrigationProgram: IrrigationProgramInterface, sunriseSunset: SunriseSunset) {
@@ -38,6 +47,10 @@ export class IrrigationProgram implements IrrigationProgramInterface {
     this.nextRunDate = irrigationProgram.nextRunDate
     this.deviceIntervals = irrigationProgram.deviceIntervals ? [...irrigationProgram.deviceIntervals] : null
     this.sunriseSunset = sunriseSunset
+  }
+
+  clone() {
+    return new IrrigationProgram(this, this.sunriseSunset)
   }
 
   private getActualStartTime(startTime: string) {

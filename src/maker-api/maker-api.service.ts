@@ -1,7 +1,7 @@
-import EnvironmentVariables from '@/environment-variables'
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import axios, { AxiosInstance } from 'axios'
+import { EnvironmentVariables } from '@/environment-variables'
 import { DeviceState } from '@/enums/device-state.enum'
 import { DeviceStates } from './interfaces/device-states.interface'
 
@@ -15,7 +15,9 @@ interface MakerDeviceDetails {
 @Injectable()
 export class MakerApiService implements OnModuleInit {
   private readonly logger = new Logger(MakerApiService.name)
+
   private axiosInstance: AxiosInstance
+
   public constructor(private configService: ConfigService<EnvironmentVariables, true>) {}
 
   onModuleInit() {
@@ -51,5 +53,6 @@ export class MakerApiService implements OnModuleInit {
     } catch (error) {
       this.logger.error(`Error getting Maker device state for device ${deviceId}: `, error)
     }
+    return undefined
   }
 }

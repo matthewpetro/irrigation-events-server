@@ -1,32 +1,31 @@
+import { Injectable, Logger } from '@nestjs/common'
+import { Cron, CronExpression } from '@nestjs/schedule'
+import { addDays, addMinutes, format, interval as dateFnsInterval, isThisMinute, set, startOfMinute } from 'date-fns'
+import { ConfigService } from '@nestjs/config'
 import { IrrigationProgramsService } from '@/irrigation-programs/irrigation-programs.service'
 import { MakerApiService } from '@/maker-api/maker-api.service'
 import { SunriseSunset } from '@/sunrise-sunset/interfaces/sunrise-sunset.interface'
-import { Injectable, Logger } from '@nestjs/common'
-import { Cron, CronExpression } from '@nestjs/schedule'
 import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
 import { IrrigationProgram } from './irrigation-program'
 import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval.interface'
-import { addDays, addMinutes, format, interval, isThisMinute, set, startOfMinute } from 'date-fns'
 import type { UpdateIrrigationProgram } from '@/irrigation-programs/types'
 import { DeviceState } from '@/enums/device-state.enum'
-import { ConfigService } from '@nestjs/config'
-import EnvironmentVariables from '@/environment-variables'
+import { EnvironmentVariables } from '@/environment-variables'
 
 function calculateDeviceIntervals(irrigationProgram: IrrigationProgram): DeviceInterval[] {
   const { deviceIds, simultaneousIrrigation, duration } = irrigationProgram
   return irrigationProgram.getActualStartTimes().flatMap((actualStartTime) => {
     if (simultaneousIrrigation) {
-      const irrigationInterval = interval(actualStartTime, addMinutes(actualStartTime, duration))
-      return deviceIds.map((deviceId) => ({ deviceId, interval: irrigationInterval }) as DeviceInterval)
-    } else {
-      return deviceIds.map((deviceId, deviceIndex) => {
-        const irrigationInterval = interval(
-          addMinutes(actualStartTime, duration * deviceIndex),
-          addMinutes(actualStartTime, duration * deviceIndex + duration)
-        )
-        return { deviceId, interval: irrigationInterval } as DeviceInterval
-      })
+      const interval = dateFnsInterval(actualStartTime, addMinutes(actualStartTime, duration))
+      return deviceIds.map((deviceId) => ({ deviceId, interval }) as DeviceInterval)
     }
+    return deviceIds.map((deviceId, deviceIndex) => {
+      const interval = dateFnsInterval(
+        addMinutes(actualStartTime, duration * deviceIndex),
+        addMinutes(actualStartTime, duration * deviceIndex + duration)
+      )
+      return { deviceId, interval } as DeviceInterval
+    })
   })
 }
 
@@ -42,7 +41,9 @@ function createDateFromTimeString(timeString: string) {
 @Injectable()
 export class IrrigationSchedulerService {
   private readonly logger = new Logger(IrrigationSchedulerService.name)
+
   private readonly defaultSunriseSunset: SunriseSunset
+
   public constructor(
     private configService: ConfigService<EnvironmentVariables, true>,
     private irrigationProgramsService: IrrigationProgramsService,
@@ -79,67 +80,94 @@ export class IrrigationSchedulerService {
       this.logger.error('Error getting irrigation programs:', error)
       return
     }
-    const currentlyRunningPrograms = irrigationPrograms.filter((program) => program.isProgramRunning())
-    // Get all programs that should start now and calculate the intervals for each device
+
+    // Get all programs that should start now
     const programsToStart = irrigationPrograms.filter(
       (program) => !program.isProgramRunning() && program.shouldProgramRunToday() && program.isProgramStartTime()
     )
-    for (const program of programsToStart) {
-      const deviceIntervals = calculateDeviceIntervals(program)
-      const nextRunDate = calculateNextRunDate(program)
-      try {
-        await this.irrigationProgramsService.update(program.id, {
-          deviceIntervals,
-          nextRunDate,
-        } as UpdateIrrigationProgram)
-        program.deviceIntervals = deviceIntervals
-        currentlyRunningPrograms.push(program)
-      } catch (error) {
-        this.logger.error(
-          `Error setting device intervals and next run date for irrigation program with name ${program.name} and ID ${program.id}:`,
-          error
-        )
-      }
-    }
 
-    // Check all intervals and turn devices on or off as needed
-    const meteringInterval = this.configService.get<number>('SWITCH_METERING_INTERVAL', 500, { infer: true })
-    for (const program of currentlyRunningPrograms) {
-      for (const deviceInterval of program.deviceIntervals!) {
-        const { deviceId, interval } = deviceInterval
-        if (isThisMinute(interval.start)) {
-          try {
-            await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
-            await new Promise((resolve) => setTimeout(resolve, meteringInterval))
-          } catch (error) {
-            this.logger.error(`Error turning on device with ID ${deviceId}:`, error)
-          }
-        }
-        if (isThisMinute(interval.end)) {
-          try {
-            await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
-            await new Promise((resolve) => setTimeout(resolve, meteringInterval))
-          } catch (error) {
-            this.logger.error(`Error turning off device with ID ${deviceId}:`, error)
-          }
-        }
-      }
-    }
-
-    // Check if any programs have completed and remove the intervals from the database
-    for (const program of currentlyRunningPrograms) {
-      if (program.areAllIntervalsCompleted()) {
+    //  Calculate the intervals for each device and the next start date, then save to the database
+    const updateProgramsResults = await Promise.allSettled(
+      programsToStart.map(async (program) => {
         try {
+          const deviceIntervals = calculateDeviceIntervals(program)
+          const nextRunDate = calculateNextRunDate(program)
           await this.irrigationProgramsService.update(program.id, {
-            deviceIntervals: null,
+            deviceIntervals,
+            nextRunDate,
           } as UpdateIrrigationProgram)
+          const newProgram = program.clone()
+          newProgram.deviceIntervals = deviceIntervals
+          newProgram.nextRunDate = nextRunDate
+          return newProgram
         } catch (error) {
           this.logger.error(
-            `Error removing device intervals for irrigation program with name ${program.name} and ID ${program.id}:`,
+            `Error setting device intervals and next run date for irrigation program with name ${program.name} and ID ${program.id}:`,
             error
           )
+          throw error
         }
-      }
-    }
+      })
+    )
+
+    const currentlyRunningPrograms = irrigationPrograms.filter((program) => program.isProgramRunning())
+    const updatedPrograms = updateProgramsResults
+      .filter((result) => result.status === 'fulfilled')
+      .map((result: PromiseFulfilledResult<IrrigationProgram>) => result.value)
+    currentlyRunningPrograms.push(...updatedPrograms)
+
+    // Create functions to turn devices on or off as needed and put the functions in an array
+    const allDeviceIntervals = currentlyRunningPrograms.flatMap((program) => program.deviceIntervals ?? [])
+    const deviceControlFunctions: (() => Promise<void>)[] = []
+    allDeviceIntervals
+      .filter(({ interval }) => isThisMinute(interval.start))
+      .map(({ deviceId }) => async () => {
+        try {
+          await this.makerApiService.setDeviceState(deviceId, DeviceState.ON)
+        } catch (error) {
+          this.logger.error(`Error turning on device with ID ${deviceId}:`, error)
+        }
+      }).forEach((fn) => deviceControlFunctions.push(fn))
+
+    allDeviceIntervals
+      .filter(({ interval }) => isThisMinute(interval.end))
+      .map(({ deviceId }) => async () => {
+        try {
+          await this.makerApiService.setDeviceState(deviceId, DeviceState.OFF)
+        } catch (error) {
+          this.logger.error(`Error turning off device with ID ${deviceId}:`, error)
+        }
+      }).forEach((fn) => deviceControlFunctions.push(fn))
+
+    // Run the device control functions with a delay between each function
+    const meteringInterval = parseInt(this.configService.get('SWITCH_METERING_INTERVAL', '500'))
+    await deviceControlFunctions.reduce(
+      (promiseChain, fn) =>
+        promiseChain.then(fn).then(
+          async () =>
+            new Promise((resolve) => {
+              setTimeout(resolve, meteringInterval)
+            })
+        ),
+      Promise.resolve()
+    )
+
+    // Check if any programs have completed and remove the intervals from the database
+    await Promise.all(
+      currentlyRunningPrograms
+        .filter((program) => program.areAllIntervalsCompleted())
+        .map(async (program) => {
+          try {
+            await this.irrigationProgramsService.update(program.id, {
+              deviceIntervals: null,
+            } as UpdateIrrigationProgram)
+          } catch (error) {
+            this.logger.error(
+              `Error removing device intervals for irrigation program with name ${program.name} and ID ${program.id}:`,
+              error
+            )
+          }
+        })
+    )
   }
 }

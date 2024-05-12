@@ -1,23 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { DatabaseService } from './database.service'
 import { ConfigModule } from '@nestjs/config'
+import { DatabaseService } from './database.service'
 
 // Mock the Nano library
 const mockAuth = jest.fn()
 const mockUse = jest.fn()
-jest.mock('nano', () => {
-  return {
-    __esModule: true,
-    default: jest.fn().mockImplementation(() => {
-      return {
-        auth: mockAuth,
-        db: {
-          use: mockUse,
-        },
-      }
-    }),
-  }
-})
+jest.mock('nano', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    auth: mockAuth,
+    db: {
+      use: mockUse,
+    },
+  })),
+}))
 
 describe('DatabaseService', () => {
   let service: DatabaseService

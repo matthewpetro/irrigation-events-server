@@ -1,11 +1,12 @@
-import EnvironmentVariables from '@/environment-variables'
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import Nano, { DocumentScope, MaybeDocument } from 'nano'
+import { EnvironmentVariables } from '@/environment-variables'
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private nano: ReturnType<typeof Nano>
+
   private intervalTimeout: NodeJS.Timeout
 
   public constructor(private configService: ConfigService<EnvironmentVariables, true>) {}
@@ -26,7 +27,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       )
     await nanoAuth()
 
-    const authRefreshMinutes: number = this.configService.get<number>('DB_AUTH_REFRESH_MINUTES', { infer: true })
+    const authRefreshMinutes: number = parseInt(this.configService.get('DB_AUTH_REFRESH_MINUTES'))
     this.intervalTimeout = setInterval(nanoAuth, authRefreshMinutes * 60 * 1000)
   }
 

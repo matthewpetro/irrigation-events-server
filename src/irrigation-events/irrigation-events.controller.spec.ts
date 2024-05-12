@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing'
+import { ConfigModule } from '@nestjs/config'
+import { parseISO } from 'date-fns'
 import { IrrigationEventsController } from '@/irrigation-events/irrigation-events.controller'
 import { MakerApiService } from '@/maker-api/maker-api.service'
 import { ViewmodelTransformService } from './viewmodel-transform.service'
 import { IrrigationEventsService } from './irrigation-events.service'
-import { ConfigModule } from '@nestjs/config'
 import { DeviceState } from '@/enums/device-state.enum'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
-import { parseISO } from 'date-fns'
 import { IrrigationEventViewmodelDto } from './dto/irrigation-event-viewmodel.dto'
 
 // TODO: Improve date mocking in this file
@@ -39,6 +39,7 @@ describe('IrrigationEventsController', () => {
         if (token === MakerApiService) {
           return mockMakerApiService
         }
+        return null
       })
       .compile()
 
