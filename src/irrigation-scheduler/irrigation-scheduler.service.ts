@@ -127,7 +127,8 @@ export class IrrigationSchedulerService {
         } catch (error) {
           this.logger.error(`Error turning on device with ID ${deviceId}:`, error)
         }
-      }).forEach((fn) => deviceControlFunctions.push(fn))
+      })
+      .forEach((fn) => deviceControlFunctions.push(fn))
 
     allDeviceIntervals
       .filter(({ interval }) => isThisMinute(interval.end))
@@ -137,7 +138,8 @@ export class IrrigationSchedulerService {
         } catch (error) {
           this.logger.error(`Error turning off device with ID ${deviceId}:`, error)
         }
-      }).forEach((fn) => deviceControlFunctions.push(fn))
+      })
+      .forEach((fn) => deviceControlFunctions.push(fn))
 
     // Run the device control functions with a delay between each function
     const meteringInterval = parseInt(this.configService.get('SWITCH_METERING_INTERVAL', '500'))
