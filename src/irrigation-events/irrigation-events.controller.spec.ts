@@ -28,7 +28,7 @@ describe('IrrigationEventsController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: '.env.local' })],
+      imports: [ConfigModule.forRoot({ envFilePath: '.env.testing' })],
       controllers: [IrrigationEventsController],
       providers: [ViewmodelTransformService],
     })
