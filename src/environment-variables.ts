@@ -4,6 +4,10 @@ export interface EnvironmentVariables {
   DB_PASSWORD: string
   DB_AUTH_REFRESH_MINUTES: number
 
+  SYSTEM_GLOBAL_INFO_DB_NAME: string
+
+  RAIN_DELAY_DOCUMENT_ID: string
+
   MAKER_API_URL: string
   MAKER_API_ACCESS_TOKEN: string
 

@@ -9,6 +9,7 @@ import { SunriseSunsetModule } from './sunrise-sunset/sunrise-sunset.module'
 import { IrrigationProgramsModule } from './irrigation-programs/irrigation-programs.module'
 import { MakerApiModule } from './maker-api/maker-api.module'
 import { IrrigationSchedulerModule } from './irrigation-scheduler/irrigation-scheduler.module'
+import { RainDelayModule } from './rain-delay/rain-delay.module'
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { IrrigationSchedulerModule } from './irrigation-scheduler/irrigation-sch
     IrrigationProgramsModule,
     MakerApiModule,
     IrrigationSchedulerModule,
+    RainDelayModule,
   ],
   controllers: [AppController],
   providers: [AppService],
