@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ConfigModule } from '@nestjs/config'
-import { RainDelayService } from './rain-delay.service'
+import { RainDelayService } from '@/rain-delay/rain-delay.service'
 import { DatabaseModule } from '@/database/database.module'
 
 describe('RainDelayService', () => {
