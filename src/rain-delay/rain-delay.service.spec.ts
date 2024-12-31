@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { ConfigModule, ConfigService } from '@nestjs/config'
+import { ConfigModule } from '@nestjs/config'
 import { DocumentInsertResponse } from 'nano'
 import { HttpException } from '@nestjs/common'
 import { RainDelayService } from '@/rain-delay/rain-delay.service'
@@ -34,9 +34,6 @@ describe('RainDelayService', () => {
     await testingModule.init()
     testingModule.enableShutdownHooks()
     service = testingModule.get<RainDelayService>(RainDelayService)
-    const configService = testingModule.get<ConfigService>(ConfigService)
-    console.log(`DB name: ${configService.get('SYSTEM_GLOBAL_INFO_DB_NAME', { infer: true })}`)
-    console.log(`document ID: ${configService.get('RAIN_DELAY_DOCUMENT_ID', { infer: true })}`)
   })
 
   afterEach(async () => {
