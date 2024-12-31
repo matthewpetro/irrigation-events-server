@@ -6,7 +6,7 @@ import { RainDelay } from './entities/rain-delay.entity'
 import { EnvironmentVariables } from '@/environment-variables'
 import { DatabaseService } from '@/database/database.service'
 
-const dtoToEntity = (rainDelayDto: RainDelayDto): RainDelay => new RainDelay(rainDelayDto.endDate)
+const dtoToEntity = (rainDelayDto: RainDelayDto): RainDelay => new RainDelay(rainDelayDto.resumeWateringAfterDate)
 
 @Injectable()
 export class RainDelayService implements OnModuleInit {
@@ -32,7 +32,7 @@ export class RainDelayService implements OnModuleInit {
   async get() {
     try {
       const result = await this.db.get(this.rainDelayDocumentId)
-      return result.endDate
+      return result.resumeWateringAfterDate
     } catch (error) {
       this.logger.error('Failed to get rain delay', error)
       throw new HttpException('Failed to get rain delay', HttpStatus.INTERNAL_SERVER_ERROR)

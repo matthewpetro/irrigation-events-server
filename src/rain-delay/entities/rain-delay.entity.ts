@@ -1,3 +1,3 @@
 export class RainDelay {
-  constructor(public readonly endDate: string | null = null) {}
+  constructor(public readonly resumeWateringAfterDate: string | null = null) {}
 }
