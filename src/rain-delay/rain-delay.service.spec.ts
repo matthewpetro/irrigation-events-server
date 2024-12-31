@@ -6,24 +6,16 @@ import { RainDelayService } from '@/rain-delay/rain-delay.service'
 import { DatabaseModule } from '@/database/database.module'
 
 // Mock the Nano library
-const mockDestroy = jest.fn()
-const mockFind = jest.fn()
 const mockGet = jest.fn()
-const mockHead = jest.fn()
 const mockInsert = jest.fn()
-const mockList = jest.fn()
 jest.mock('nano', () => ({
   __esModule: true,
   default: jest.fn().mockImplementation(() => ({
     auth: jest.fn(),
     db: {
       use: jest.fn().mockReturnValue({
-        destroy: mockDestroy,
-        find: mockFind,
         get: mockGet,
-        head: mockHead,
         insert: mockInsert,
-        list: mockList,
       }),
     },
   })),
