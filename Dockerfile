@@ -5,7 +5,6 @@ WORKDIR /usr/src/app
 RUN npm install -g pnpm
 COPY . .
 RUN pnpm install --frozen-lockfile
-COPY .env.testing .
 RUN pnpm run test
 RUN rm .env.testing
 RUN pnpm run build
