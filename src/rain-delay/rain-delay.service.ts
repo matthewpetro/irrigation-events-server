@@ -8,6 +8,8 @@ import { DatabaseService } from '@/database/database.service'
 
 const dtoToEntity = (rainDelayDto: RainDelayDto): RainDelay => new RainDelay(rainDelayDto.resumeWateringAfterDate)
 
+const entityToDto = (rainDelay: RainDelay): RainDelayDto => new RainDelayDto(rainDelay.resumeWateringAfterDate)
+
 @Injectable()
 export class RainDelayService implements OnModuleInit {
   private readonly logger = new Logger(RainDelayService.name)
@@ -23,7 +25,7 @@ export class RainDelayService implements OnModuleInit {
     this.rainDelayDocumentId = this.configService.get('RAIN_DELAY_DOCUMENT_ID', { infer: true })
   }
 
-  onModuleInit() {
+  async onModuleInit() {
     this.db = this.databaseService.getDatabaseConnection(
       this.configService.get('SYSTEM_GLOBAL_INFO_DB_NAME', { infer: true })
     )
@@ -32,42 +34,34 @@ export class RainDelayService implements OnModuleInit {
   async get() {
     try {
       const result = await this.db.get(this.rainDelayDocumentId)
-      return result.resumeWateringAfterDate
+      return entityToDto(result)
     } catch (error) {
-      this.logger.error('Failed to get rain delay', error)
-      throw new HttpException('Failed to get rain delay', HttpStatus.INTERNAL_SERVER_ERROR)
+      try {
+        this.logger.warn(`Unable to get rain delay: ${error.message}. Recreating rain delay document.`)
+        await this.db.insert(new RainDelay(), this.rainDelayDocumentId)
+        return new RainDelayDto()
+      } catch (innerError) {
+        this.logger.error('Failed to recreate rain delay', error)
+        throw new HttpException('Failed to get rain delay', HttpStatus.INTERNAL_SERVER_ERROR)
+      }
     }
   }
 
   async update(rainDelayDto: RainDelayDto) {
     try {
-      const result = await this.db.insert(dtoToEntity(rainDelayDto), this.rainDelayDocumentId)
-      if (!result.ok) {
-        this.logger.error('Failed to update rain delay', result)
+      const currentDocument = await this.db.get(this.rainDelayDocumentId)
+      await this.db.insert(
+        { ...currentDocument, ...dtoToEntity(rainDelayDto) },
+        this.rainDelayDocumentId
+      )
+    } catch (error) {
+      try {
+        this.logger.warn(`Unable to get current rain delay: ${error.message}. Creating new rain delay document.`)
+        await this.db.insert(dtoToEntity(rainDelayDto), this.rainDelayDocumentId)
+      } catch (innerError) {
+        this.logger.error('Failed to recreate rain delay', error)
         throw new HttpException('Failed to update rain delay', HttpStatus.INTERNAL_SERVER_ERROR)
       }
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error
-      }
-      this.logger.error('Failed to update rain delay', error)
-      throw new HttpException('Failed to update rain delay', HttpStatus.INTERNAL_SERVER_ERROR)
-    }
-  }
-
-  async remove() {
-    try {
-      const result = await this.db.insert(new RainDelay(), this.rainDelayDocumentId)
-      if (!result.ok) {
-        this.logger.error('Failed to remove rain delay', result)
-        throw new HttpException('Failed to remove rain delay', HttpStatus.INTERNAL_SERVER_ERROR)
-      }
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error
-      }
-      this.logger.error('Failed to remove rain delay', error)
-      throw new HttpException('Failed to remove rain delay', HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 }
