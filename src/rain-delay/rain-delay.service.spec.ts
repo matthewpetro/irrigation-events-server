@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ConfigModule } from '@nestjs/config'
-import { DocumentInsertResponse } from 'nano'
 import { HttpException } from '@nestjs/common'
 import { RainDelayService } from '@/rain-delay/rain-delay.service'
 import { DatabaseModule } from '@/database/database.module'
@@ -45,45 +44,55 @@ describe('RainDelayService', () => {
     expect(service).toBeDefined()
   })
 
-  it('should get the end date of the rain delay', async () => {
-    const mockResumeWateringAfterDate = '2024-01-01'
-    mockGet.mockResolvedValue({ resumeWateringAfterDate: mockResumeWateringAfterDate })
-    const result = await service.get()
-    expect(result).toEqual(mockResumeWateringAfterDate)
+  describe('get rain delay tests', () => {
+    it('should get the end date of the rain delay', async () => {
+      const mockResumeWateringAfterDate = '2024-01-01'
+      mockGet.mockResolvedValue({ resumeWateringAfterDate: mockResumeWateringAfterDate })
+      const result = await service.get()
+      expect(result.resumeWateringAfterDate).toEqual(mockResumeWateringAfterDate)
+    })
+
+    it('should insert a new document when no rain delay is set', async () => {
+      mockGet.mockRejectedValue(new Error())
+      const result = await service.get()
+      expect(mockInsert).toHaveBeenCalledWith({ resumeWateringAfterDate: null }, 'rain-delay')
+      expect(result.resumeWateringAfterDate).toBeNull()
+    })
+
+    it('should throw an HttpException if the get and insert both fail', async () => {
+      mockGet.mockRejectedValue(new Error())
+      mockInsert.mockRejectedValue(new Error())
+      await expect(service.get()).rejects.toThrow(HttpException)
+    })
   })
 
-  it('should get a null if no rain delay is set', async () => {
-    mockGet.mockResolvedValue({ resumeWateringAfterDate: null })
-    const result = await service.get()
-    expect(result).toBeNull()
-  })
+  describe('update rain delay tests', () => {
+    it('should update the rain delay', async () => {
+      const mockResumeWateringAfterDate = '2024-01-02'
+      mockGet.mockResolvedValue({ resumeWateringAfterDate: null, _rev: '1-234' })
+      mockInsert.mockResolvedValue(null)
+      await service.update({ resumeWateringAfterDate: mockResumeWateringAfterDate })
+      expect(mockInsert).toHaveBeenCalledWith(
+        { resumeWateringAfterDate: mockResumeWateringAfterDate, _rev: '1-234' },
+        'rain-delay'
+      )
+    })
 
-  it('should throw an HttpException if the get fails', async () => {
-    mockGet.mockRejectedValue(new Error())
-    await expect(service.get()).rejects.toThrow(HttpException)
-  })
+    it('should insert a new document when no rain delay is set', async () => {
+      const mockResumeWateringAfterDate = '2024-01-02'
+      mockGet.mockRejectedValue(new Error())
+      mockInsert.mockResolvedValue(null)
+      await service.update({ resumeWateringAfterDate: mockResumeWateringAfterDate })
+      expect(mockInsert).toHaveBeenCalledWith({ resumeWateringAfterDate: mockResumeWateringAfterDate }, 'rain-delay')
+    })
 
-  it('should update the rain delay', async () => {
-    const mockResumeWateringAfterDate = '2024-01-01'
-    mockInsert.mockResolvedValue({ ok: true } as DocumentInsertResponse)
-    await service.update({ resumeWateringAfterDate: mockResumeWateringAfterDate })
-    expect(mockInsert).toHaveBeenCalledWith({ resumeWateringAfterDate: mockResumeWateringAfterDate }, 'rain-delay')
-  })
-
-  it('should throw an HttpException if the update fails', async () => {
-    const mockResumeWateringAfterDate = '2024-01-01'
-    mockInsert.mockRejectedValue(new Error())
-    await expect(service.update({ resumeWateringAfterDate: mockResumeWateringAfterDate })).rejects.toThrow(HttpException)
-  })
-
-  it('should remove the rain delay', async () => {
-    mockInsert.mockResolvedValue({ ok: true } as DocumentInsertResponse)
-    await service.remove()
-    expect(mockInsert).toHaveBeenCalledWith({ resumeWateringAfterDate: null }, 'rain-delay')
-  })
-
-  it('should throw an HttpException if the remove fails', async () => {
-    mockInsert.mockRejectedValue(new Error())
-    await expect(service.remove()).rejects.toThrow(HttpException)
+    it('should throw an HttpException if the get and insert both fail', async () => {
+      const mockResumeWateringAfterDate = '2024-01-02'
+      mockGet.mockRejectedValue(new Error())
+      mockInsert.mockRejectedValue(new Error())
+      await expect(service.update({ resumeWateringAfterDate: mockResumeWateringAfterDate })).rejects.toThrow(
+        HttpException
+      )
+    })
   })
 })
