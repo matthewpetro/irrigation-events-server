@@ -4,7 +4,7 @@ import { Warning } from '../enums/warning.enum'
 export class IrrigationEventViewmodelDto {
   @IsISO8601()
   @MaxDate(new Date())
-  readonly startTimestamp: string
+  readonly startTimestamp?: string
 
   @IsISO8601()
   @MaxDate(new Date())
