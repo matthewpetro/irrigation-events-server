@@ -234,7 +234,7 @@ describe('IrrigationEventsService', () => {
     expect(result).toEqual(mockResponse)
   })
 
-  it('should get an empty array of irrigation events after end if the databse throws an error', async () => {
+  it('should get an empty array of irrigation events after end if the database throws an error', async () => {
     mockFind.mockRejectedValue(new Error('Database error'))
     const result = await service.getEventsAfterEnd('2024-01-01T00:00:00.000Z', 42)
     expect(mockFind).toHaveBeenCalled()
