@@ -40,7 +40,7 @@
     "nano": "^11.0.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "uuid": "^13.0.0",
+    "uuid": "^9.0.1",
     "zod": "^4.2.1"
   },
   "devDependencies": {
@@ -78,6 +78,7 @@
     }
   },
   "jest": {
+    "preset": "ts-jest/presets/default-esm",
     "moduleFileExtensions": [
       "js",
       "json",
@@ -85,8 +86,21 @@
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "useESM": true,
+          "tsconfig": {
+            "module": "ESNext",
+            "esModuleInterop": true,
+            "moduleResolution": "node"
+          }
+        }
+      ]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
@@ -94,7 +108,8 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/$1"
+      "^@/(.*)$": "<rootDir>/$1",
+      "^(\\.{1,2}/.*)\\.js$": "$1"
     }
   }
 }
