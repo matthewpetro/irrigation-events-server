@@ -14,9 +14,6 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     this.nano = Nano({
       url: this.configService.get<string>('COUCHDB_URL', { infer: true }),
-      requestDefaults: {
-        jar: true,
-      },
     })
 
     // Use CouchDB's cookie authentication
