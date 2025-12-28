@@ -40,7 +40,7 @@ export class RainDelayService implements OnModuleInit {
         this.logger.warn(`Unable to get rain delay: ${error.message}. Recreating rain delay document.`)
         await this.db.insert(new RainDelay(), this.rainDelayDocumentId)
         return new RainDelayDto()
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (innerError) {
         this.logger.error('Failed to recreate rain delay', error)
         throw new HttpException('Failed to get rain delay', HttpStatus.INTERNAL_SERVER_ERROR)
@@ -51,15 +51,12 @@ export class RainDelayService implements OnModuleInit {
   async update(rainDelayDto: RainDelayDto) {
     try {
       const currentDocument = await this.db.get(this.rainDelayDocumentId)
-      await this.db.insert(
-        { ...currentDocument, ...dtoToEntity(rainDelayDto) },
-        this.rainDelayDocumentId
-      )
+      await this.db.insert({ ...currentDocument, ...dtoToEntity(rainDelayDto) }, this.rainDelayDocumentId)
     } catch (error) {
       try {
         this.logger.warn(`Unable to get current rain delay: ${error.message}. Creating new rain delay document.`)
         await this.db.insert(dtoToEntity(rainDelayDto), this.rainDelayDocumentId)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (innerError) {
         this.logger.error('Failed to recreate rain delay', error)
         throw new HttpException('Failed to update rain delay', HttpStatus.INTERNAL_SERVER_ERROR)
