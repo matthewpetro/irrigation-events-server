@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { DocumentScope, MaybeDocument } from 'nano'
 import { ConfigService } from '@nestjs/config'
-import { RainDelayDto } from './dto/rain-delay.dto'
-import { RainDelay } from './entities/rain-delay.entity'
 import { EnvironmentVariables } from '@/environment-variables'
 import { DatabaseService } from '@/database/database.service'
+import { RainDelayDto } from './dto/rain-delay.dto'
+import { RainDelay } from './entities/rain-delay.entity'
 
 const dtoToEntity = (rainDelayDto: RainDelayDto): RainDelay => new RainDelay(rainDelayDto.resumeWateringAfterDate)
 
@@ -40,6 +40,7 @@ export class RainDelayService implements OnModuleInit {
         this.logger.warn(`Unable to get rain delay: ${error.message}. Recreating rain delay document.`)
         await this.db.insert(new RainDelay(), this.rainDelayDocumentId)
         return new RainDelayDto()
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (innerError) {
         this.logger.error('Failed to recreate rain delay', error)
         throw new HttpException('Failed to get rain delay', HttpStatus.INTERNAL_SERVER_ERROR)
@@ -58,6 +59,7 @@ export class RainDelayService implements OnModuleInit {
       try {
         this.logger.warn(`Unable to get current rain delay: ${error.message}. Creating new rain delay document.`)
         await this.db.insert(dtoToEntity(rainDelayDto), this.rainDelayDocumentId)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (innerError) {
         this.logger.error('Failed to recreate rain delay', error)
         throw new HttpException('Failed to update rain delay', HttpStatus.INTERNAL_SERVER_ERROR)

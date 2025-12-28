@@ -7,6 +7,7 @@ import { EnvironmentVariables } from '@/environment-variables'
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private nano: ReturnType<typeof Nano>
 
+  // eslint-disable-next-line no-undef
   private intervalTimeout: NodeJS.Timeout
 
   public constructor(private configService: ConfigService<EnvironmentVariables, true>) {}

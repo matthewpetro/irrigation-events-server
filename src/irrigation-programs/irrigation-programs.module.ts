@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { DatabaseModule } from '@/database/database.module'
 import { IrrigationProgramsService } from './irrigation-programs.service'
 import { IrrigationProgramsController } from './irrigation-programs.controller'
-import { DatabaseModule } from '@/database/database.module'
 
 @Module({
   imports: [ConfigModule, DatabaseModule],

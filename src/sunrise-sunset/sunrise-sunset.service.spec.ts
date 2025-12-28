@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ConfigModule } from '@nestjs/config'
 import axios, { AxiosRequestConfig } from 'axios'
-import { SunriseSunsetService } from './sunrise-sunset.service'
 import { DatabaseModule } from '@/database/database.module'
+import { SunriseSunsetService } from './sunrise-sunset.service'
 import {
   mockStartDate,
   mockEndDate,

@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ConfigModule } from '@nestjs/config'
 import { set } from 'date-fns'
-import { IrrigationSchedulerService } from './irrigation-scheduler.service'
 import { IrrigationProgramsService } from '@/irrigation-programs/irrigation-programs.service'
 import { MakerApiService } from '@/maker-api/maker-api.service'
 import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
 import { DeviceState } from '@/enums/device-state.enum'
+import { IrrigationSchedulerService } from './irrigation-scheduler.service'
 import {
   referenceDate,
   sunriseSunsetMock,

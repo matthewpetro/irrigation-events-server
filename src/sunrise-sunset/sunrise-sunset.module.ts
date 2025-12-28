@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { SunriseSunsetService } from './sunrise-sunset.service'
 import { DatabaseModule } from '@/database/database.module'
+import { SunriseSunsetService } from './sunrise-sunset.service'
 import { SunriseSunsetController } from './sunrise-sunset.controller'
 
 @Module({

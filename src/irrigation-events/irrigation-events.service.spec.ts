@@ -2,13 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { ConfigModule } from '@nestjs/config'
 import { parseISO } from 'date-fns'
 import { HttpException } from '@nestjs/common'
+import { DeviceState } from '@/enums/device-state.enum'
+import { IrrigationEventsService } from '@/irrigation-events/irrigation-events.service'
+import { DatabaseModule } from '@/database/database.module'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import { IrrigationEventDocument } from './entities/irrigation-event.entity'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
-import { DeviceState } from '@/enums/device-state.enum'
 
-import { IrrigationEventsService } from '@/irrigation-events/irrigation-events.service'
-import { DatabaseModule } from '@/database/database.module'
 
 // Mock the Nano library
 const mockInsert = jest.fn()
