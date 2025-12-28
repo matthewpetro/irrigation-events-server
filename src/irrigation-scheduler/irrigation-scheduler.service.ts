@@ -6,11 +6,11 @@ import { IrrigationProgramsService } from '@/irrigation-programs/irrigation-prog
 import { MakerApiService } from '@/maker-api/maker-api.service'
 import { SunriseSunset } from '@/sunrise-sunset/interfaces/sunrise-sunset.interface'
 import { SunriseSunsetService } from '@/sunrise-sunset/sunrise-sunset.service'
-import { IrrigationProgram } from './irrigation-program'
 import { DeviceInterval } from '@/irrigation-programs/interfaces/device-interval.interface'
 import type { UpdateIrrigationProgram } from '@/irrigation-programs/types'
 import { DeviceState } from '@/enums/device-state.enum'
 import { EnvironmentVariables } from '@/environment-variables'
+import { IrrigationProgram } from './irrigation-program'
 
 function calculateDeviceIntervals(irrigationProgram: IrrigationProgram): DeviceInterval[] {
   const { deviceIds, simultaneousIrrigation, duration } = irrigationProgram

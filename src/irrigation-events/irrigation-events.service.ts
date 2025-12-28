@@ -3,11 +3,11 @@ import Nano, { DocumentScope } from 'nano'
 import { ConfigService } from '@nestjs/config'
 import { parseISO } from 'date-fns'
 import { EnvironmentVariables } from '@/environment-variables'
+import { DatabaseService } from '@/database/database.service'
 import { IrrigationEventDocument } from './entities/irrigation-event.entity'
 import { IrrigationEvent } from './interfaces/irrigation-event.interface'
 import * as queryBuilders from './queries'
 import { MakerApiEventDto } from './dto/maker-api-event.dto'
-import { DatabaseService } from '@/database/database.service'
 
 const makerEventToIrrigationEvent = ({ displayName, value, deviceId }: MakerApiEventDto) =>
   ({

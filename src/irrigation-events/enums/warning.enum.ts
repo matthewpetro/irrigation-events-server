@@ -4,7 +4,6 @@ const Warning = {
   DEVICE_STATE_UNKNOWN: 'The OFF event is missing and the current device state cannot be determined.',
 } as const
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 type Warning = (typeof Warning)[keyof typeof Warning]
 
 export { Warning }

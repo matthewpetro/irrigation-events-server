@@ -2,18 +2,18 @@ import { HttpException, HttpStatus, Injectable, Logger, OnModuleInit } from '@ne
 import { v4 as uuidv4 } from 'uuid'
 import { ConfigService } from '@nestjs/config'
 import { DocumentScope, Document, MaybeDocument } from 'nano'
+import { EnvironmentVariables } from '@/environment-variables'
+import { DatabaseService } from '@/database/database.service'
 import type { CreateIrrigationProgram, UpdateIrrigationProgram } from './types'
 import { IrrigationProgramEntity } from './entities/irrigation-program.entity'
 import { IrrigationProgram } from './interfaces/irrigation-program.interface'
-import { EnvironmentVariables } from '@/environment-variables'
-import { DatabaseService } from '@/database/database.service'
 
 type IrrigationProgramDocument = IrrigationProgramEntity & Document
 
 const irrigationEntityToIrrigationInterface = (
   irrigationProgramEntity: IrrigationProgramDocument
 ): IrrigationProgram => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { _id, _rev, ...rest } = irrigationProgramEntity
   return {
     id: _id,
