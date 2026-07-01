@@ -3,14 +3,14 @@ import { DeviceState } from '@/enums/device-state.enum'
 
 export class MakerApiEventDto {
   @Equals('switch')
-  readonly name: string
+  readonly name!: string
 
   @IsString()
-  readonly displayName: string
+  readonly displayName!: string
 
   @IsNumber()
-  readonly deviceId: number
+  readonly deviceId!: number
 
   @IsEnum(DeviceState)
-  readonly value: DeviceState
+  readonly value!: DeviceState
 }

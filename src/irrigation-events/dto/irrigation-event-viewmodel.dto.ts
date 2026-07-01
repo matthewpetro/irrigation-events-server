@@ -10,11 +10,11 @@ export class IrrigationEventViewmodelDto {
   @MaxDate(new Date())
   readonly endTimestamp?: string
 
-  readonly title: string
+  readonly title!: string
 
   @IsInt()
   @IsPositive()
-  readonly deviceId: number
+  readonly deviceId!: number
 
   readonly warning?: Warning
 

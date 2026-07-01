@@ -5,10 +5,10 @@ import { EnvironmentVariables } from '@/environment-variables'
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  private nano: ReturnType<typeof Nano>
+  private nano!: ReturnType<typeof Nano>
 
   // eslint-disable-next-line no-undef
-  private intervalTimeout: NodeJS.Timeout
+  private intervalTimeout!: NodeJS.Timeout
 
   public constructor(private configService: ConfigService<EnvironmentVariables, true>) {}
 

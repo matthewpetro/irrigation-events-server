@@ -25,7 +25,7 @@ const irrigationEntityToIrrigationInterface = (
 export class IrrigationProgramsService implements OnModuleInit {
   private readonly logger = new Logger(IrrigationProgramsService.name)
 
-  private db: DocumentScope<IrrigationProgramEntity & MaybeDocument>
+  private db!: DocumentScope<IrrigationProgramEntity & MaybeDocument>
 
   public constructor(
     private configService: ConfigService<EnvironmentVariables, true>,
@@ -77,7 +77,7 @@ export class IrrigationProgramsService implements OnModuleInit {
       if (error instanceof HttpException) {
         throw error
       }
-      if (error.statusCode === 404) {
+      if (typeof error === 'object' && error !== null && 'statusCode' in error && error.statusCode === 404) {
         this.logger.error(`Irrigation program with ID ${id} not found`)
         throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
       }
@@ -126,7 +126,7 @@ export class IrrigationProgramsService implements OnModuleInit {
       if (error instanceof HttpException) {
         throw error
       }
-      if (error.statusCode === 404) {
+      if (typeof error === 'object' && error !== null && 'statusCode' in error && error.statusCode === 404) {
         this.logger.error(`Irrigation program with ID ${id} not found`)
         throw new HttpException(`Irrigation program with ID ${id} not found`, HttpStatus.NOT_FOUND)
       } else {

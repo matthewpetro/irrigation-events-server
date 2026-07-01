@@ -35,9 +35,9 @@ const dbDocumentsToSunriseSunsets = (documents: SunriseSunsetEntity[]) =>
 
 @Injectable()
 export class SunriseSunsetService implements OnModuleInit {
-  private axiosInstance: AxiosInstance
+  private axiosInstance!: AxiosInstance
 
-  private db: DocumentScope<SunriseSunsetEntity>
+  private db!: DocumentScope<SunriseSunsetEntity>
 
   private readonly logger = new Logger(SunriseSunsetService.name)
 

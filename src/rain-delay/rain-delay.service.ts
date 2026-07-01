@@ -14,7 +14,7 @@ const entityToDto = (rainDelay: RainDelay): RainDelayDto => new RainDelayDto(rai
 export class RainDelayService implements OnModuleInit {
   private readonly logger = new Logger(RainDelayService.name)
 
-  private db: DocumentScope<RainDelay & MaybeDocument>
+  private db!: DocumentScope<RainDelay & MaybeDocument>
 
   private readonly rainDelayDocumentId: string
 
@@ -37,7 +37,8 @@ export class RainDelayService implements OnModuleInit {
       return entityToDto(result)
     } catch (error) {
       try {
-        this.logger.warn(`Unable to get rain delay: ${error.message}. Recreating rain delay document.`)
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        this.logger.warn(`Unable to get rain delay: ${errorMessage}. Recreating rain delay document.`)
         await this.db.insert(new RainDelay(), this.rainDelayDocumentId)
         return new RainDelayDto()
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,7 +55,8 @@ export class RainDelayService implements OnModuleInit {
       await this.db.insert({ ...currentDocument, ...dtoToEntity(rainDelayDto) }, this.rainDelayDocumentId)
     } catch (error) {
       try {
-        this.logger.warn(`Unable to get current rain delay: ${error.message}. Creating new rain delay document.`)
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        this.logger.warn(`Unable to get current rain delay: ${errorMessage}. Creating new rain delay document.`)
         await this.db.insert(dtoToEntity(rainDelayDto), this.rainDelayDocumentId)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (innerError) {

@@ -13,15 +13,15 @@ import { DeviceEvents } from './interfaces/device-events.interface'
 
 class QueryParameters {
   @IsISO8601()
-  startTimestamp: string
+  startTimestamp!: string
 
   @IsISO8601()
-  endTimestamp: string
+  endTimestamp!: string
 }
 
 class MakerApiWrapperDto {
   @ApiProperty()
-  content: MakerApiEventDto
+  content!: MakerApiEventDto
 }
 
 const isCurrentTimeWithinInterval = (startTimestamp: string, endTimestamp: string) =>

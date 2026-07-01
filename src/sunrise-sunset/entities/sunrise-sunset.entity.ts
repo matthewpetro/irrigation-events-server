@@ -1,9 +1,9 @@
 import { IdentifiedDocument } from 'nano'
 
 export class SunriseSunsetEntity implements IdentifiedDocument {
-  _id: string
+  _id!: string
 
-  sunrise: string
+  sunrise!: string
 
-  sunset: string
+  sunset!: string
 }

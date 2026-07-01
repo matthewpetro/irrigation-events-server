@@ -12,10 +12,10 @@ class DevelopmentGuard implements CanActivate {
 
 class QueryParameters {
   @IsISO8601()
-  startDate: string
+  startDate!: string
 
   @IsISO8601()
-  endDate: string
+  endDate!: string
 }
 
 // TODO: Remove this controller when no longer needed for testing purposes

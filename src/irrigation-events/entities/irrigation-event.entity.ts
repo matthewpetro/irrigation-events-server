@@ -2,11 +2,11 @@ import { IdentifiedDocument } from 'nano'
 import { DeviceState } from '@/enums/device-state.enum'
 
 export class IrrigationEventDocument implements IdentifiedDocument {
-  _id: string
+  _id!: string
 
-  deviceName: string
+  deviceName!: string
 
-  deviceId: number
+  deviceId!: number
 
-  state: DeviceState
+  state!: DeviceState
 }

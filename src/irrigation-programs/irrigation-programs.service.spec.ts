@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ConfigModule } from '@nestjs/config'
 import { v4 as uuidv4 } from 'uuid'
-import { HttpStatus } from '@nestjs/common'
+import { HttpException, HttpStatus } from '@nestjs/common'
 import { DatabaseModule } from '@/database/database.module'
 import { IrrigationProgramsService } from './irrigation-programs.service'
 import { IrrigationProgram } from './interfaces/irrigation-program.interface'
@@ -91,7 +91,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.create(mockCreateDto)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
       expect(mockInsert).toHaveBeenCalledWith(mockCreateDto, expect.stringMatching(uuidv4Regex))
     })
@@ -109,7 +109,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.create(mockCreateDto)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
       expect(mockInsert).toHaveBeenCalledWith(mockCreateDto, expect.stringMatching(uuidv4Regex))
     })
@@ -159,7 +159,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.findAll()
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
       expect(mockList).toHaveBeenCalled()
     })
@@ -191,7 +191,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.findOne(id)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.NOT_FOUND)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.NOT_FOUND)
       }
       expect(mockGet).toHaveBeenCalledWith(id)
     })
@@ -202,7 +202,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.findOne(id)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.NOT_FOUND)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.NOT_FOUND)
       }
       expect(mockGet).toHaveBeenCalledWith(id)
     })
@@ -213,7 +213,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.findOne(id)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
       expect(mockGet).toHaveBeenCalledWith(id)
     })
@@ -257,7 +257,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.update(id, mockUpdateDto)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.NOT_FOUND)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.NOT_FOUND)
       }
       expect(mockGet).toHaveBeenCalledWith(id)
       expect(mockInsert).not.toHaveBeenCalled()
@@ -273,7 +273,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.update(id, mockUpdateDto)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.NOT_FOUND)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.NOT_FOUND)
       }
       expect(mockGet).toHaveBeenCalledWith(id)
       expect(mockInsert).not.toHaveBeenCalled()
@@ -289,7 +289,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.update(id, mockUpdateDto)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
       expect(mockGet).toHaveBeenCalledWith(id)
       expect(mockInsert).not.toHaveBeenCalled()
@@ -315,7 +315,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.update(id, mockUpdateDto)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
       expect(mockGet).toHaveBeenCalledWith(id)
       expect(mockInsert).toHaveBeenCalledWith({ _id: id, _rev: rev, ...mockIrrigationProgram, ...mockUpdateDto })
@@ -341,7 +341,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.update(id, mockUpdateDto)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
       expect(mockGet).toHaveBeenCalledWith(id)
       expect(mockInsert).toHaveBeenCalledWith({ _id: id, _rev: rev, ...mockIrrigationProgram, ...mockUpdateDto })
@@ -365,7 +365,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.remove(id)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.NOT_FOUND)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.NOT_FOUND)
       }
       expect(mockHead).toHaveBeenCalledWith(id)
       expect(mockDestroy).not.toHaveBeenCalled()
@@ -379,7 +379,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.remove(id)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
       expect(mockHead).toHaveBeenCalledWith(id)
       expect(mockDestroy).toHaveBeenCalledWith(id, rev)
@@ -393,7 +393,7 @@ describe('IrrigationProgramsService', () => {
       try {
         await service.remove(id)
       } catch (error) {
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
       expect(mockHead).toHaveBeenCalledWith(id)
       expect(mockDestroy).toHaveBeenCalledWith(id, rev)

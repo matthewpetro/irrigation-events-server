@@ -16,7 +16,7 @@ interface MakerDeviceDetails {
 export class MakerApiService implements OnModuleInit {
   private readonly logger = new Logger(MakerApiService.name)
 
-  private axiosInstance: AxiosInstance
+  private axiosInstance!: AxiosInstance
 
   public constructor(private configService: ConfigService<EnvironmentVariables, true>) {}
 

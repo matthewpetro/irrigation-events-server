@@ -29,7 +29,7 @@ const dbDocumentToIrrigationEvent = ({ _id, deviceName, deviceId, state }: Irrig
 export class IrrigationEventsService implements OnModuleInit {
   private readonly logger = new Logger(IrrigationEventsService.name)
 
-  private db: DocumentScope<IrrigationEventDocument>
+  private db!: DocumentScope<IrrigationEventDocument>
 
   public constructor(
     private configService: ConfigService<EnvironmentVariables, true>,
