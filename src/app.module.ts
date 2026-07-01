@@ -13,7 +13,9 @@ import { RainDelayModule } from './rain-delay/rain-delay.module'
 
 @Module({
   imports: [
-    DevtoolsModule.register({ http: process.env.NODE_ENV !== 'production' }),
+    ...(process.env.NODE_ENV === 'test'
+      ? []
+      : [DevtoolsModule.register({ http: process.env.NODE_ENV !== 'production' })]),
     ConfigModule.forRoot({ envFilePath: '.env.local' }),
     ScheduleModule.forRoot(),
     IrrigationEventsModule,
