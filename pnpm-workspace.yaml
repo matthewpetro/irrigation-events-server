@@ -5,3 +5,4 @@ allowBuilds:
   unrs-resolver: true
 minimumReleaseAgeExclude:
   - '@nestjs/swagger@11.4.5'
+  - prettier@3.9.4
