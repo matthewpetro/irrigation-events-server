@@ -12,9 +12,11 @@ import { ViewmodelTransformService } from './viewmodel-transform.service'
 import { DeviceEvents } from './interfaces/device-events.interface'
 
 class QueryParameters {
+  @ApiProperty()
   @IsISO8601()
   startTimestamp!: string
 
+  @ApiProperty()
   @IsISO8601()
   endTimestamp!: string
 }

@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { CanActivate, Controller, Get, Injectable, Query, UseGuards } from '@nestjs/common'
 import { IsISO8601 } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger'
 import { parseISO } from 'date-fns'
 import { SunriseSunsetService } from './sunrise-sunset.service'
 
@@ -11,9 +12,11 @@ class DevelopmentGuard implements CanActivate {
 }
 
 class QueryParameters {
+  @ApiProperty()
   @IsISO8601()
   startDate!: string
 
+  @ApiProperty()
   @IsISO8601()
   endDate!: string
 }
